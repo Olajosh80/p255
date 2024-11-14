@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novi</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-container {
+            max-width: 400px;
+            padding: 20px;
+            background-color: #111;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            animation: flicker 2s infinite;
+            text-align: center;
+        }
+        @keyframes flicker {
+            0% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
+            100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+        }
+        .btn-primary {
+            background-color: #00ff00;
+            border-color: #00ff00;
+            color: #000;
+        }
+        .btn-primary:hover {
+            background-color: #00cc00;
+            border-color: #00cc00;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 255, 0, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ff00;
+            animation: spin 1s ease-in-out infinite;
+            -webkit-animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { -webkit-transform: rotate(360deg); }
+        }
+        @-webkit-keyframes spin {
+            to { -webkit-transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
+        <a class="navbar-brand" href="/">NOVI</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/raydium">Raydium</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pump">Pump</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/upgrade">Upgrade</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="login-container">
+        <h2 class="text-center mb-4">Welcome to NoviPool</h2>
+        <p class="text-lg mb-6">
+            We're excited to have you here! NoviPool is your gateway to the most exciting opportunities in the crypto space.
+            Get ready to explore and snipe new Raydium pool tokens and more. Let's get started!
+        </p>
+        <div id="tokenDisplay" class="mb-3"></div>
+        <div id="loadingState" style="display: none;">
+            <div class="loading-spinner"></div>
+            <span>Validating token...</span>
+        </div>
+        <div id="message" class="mt-3"></div>
+    </div>
+
+    <script>
+        const getCookieValue = (name) => {
+            const cookies = document.cookie.split(';');
+            const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
+            return cookie ? cookie .split('=')[1] : null;
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = getCookieValue('token');
+            const telegramId = getCookieValue('telegramId');
+
+            if (token && telegramId) {
+                // If token and telegramId are present, automatically redirect to the dashboard
+                window.location.href = '/dashboard';
+            } else {
+                // If not logged in, proceed with token validation from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const tokenFromUrl = urlParams.get('token');
+                const tokenDisplay = document.getElementById('tokenDisplay');
+                const loadingState = document.getElementById('loadingState');
+                const messageDiv = document.getElementById('message');
+
+                if (!tokenFromUrl) {
+                    messageDiv.innerText = 'No token provided.        ';
+                    messageDiv.style.color = 'red';
+                    messageDiv.style.marginBottom = '20px'; // Add margin to the message div
+
+                    // Display login button when no token is provided
+                    const loginButton = document.createElement('button');
+                    loginButton.innerText = 'Login';
+                    loginButton.className = 'btn btn-primary mt-20'; // Increased margin-top
+                    loginButton.addEventListener('click', () => {
+                        window.location.href = '/login'; // Redirect to login page
+                    });
+
+                    messageDiv.appendChild(loginButton);
+                } else {
+                    const firstFive = tokenFromUrl.slice(0, 5);
+                    const lastFive = tokenFromUrl.slice(-5);
+                    tokenDisplay.innerHTML = `<strong>Token:</strong> ${firstFive}...${lastFive}`;
+                    fetchEnvVariables().then(env => validateToken(env, tokenFromUrl));
+                }
+            }
+        });
+
+        async function fetchEnvVariables() {
+            const response = await fetch('/env.json');
+            const env = await response.json();
+            return env;
+        }
+
+        async function validateToken(env, token) {
+            try {
+                // Show loading state
+                document.getElementById('loadingState').style.display = 'block';
+                const messageDiv = document.getElementById('message');
+
+                const response = await fetch(`${env.API_BASE_URL}/users/validate-login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to validate token.');
+                }
+
+                const validationData = await response.json();
+                console.log(validationData);
+
+                if (validationData.telegramId) {
+                    // Set the expiration date to 48 hours from now
+                    const expirationDate = new Date();
+                    expirationDate.setTime(expirationDate.getTime() + (48 * 60 * 60 * 1000)); // 48 hours
+
+                    // Set cookies with the expiration date
+                    document.cookie = `token=true; expires=${expirationDate.toUTCString()}; path=/;`;
+                    document.cookie = `nonce=${validationData.nonce}; expires=${expirationDate.toUTCString()}; path=/;`;
+                    document.cookie = `telegramId=${validationData.telegramId}; expires=${expirationDate.toUTCString()}; path=/;`;
+
+                    messageDiv.innerText = 'Token is valid. Redirecting to the dashboard...';
+                    messageDiv.style.color = 'green';
+
+                    setTimeout(() => {
+                        window.location.href = '/dashboard'; // Redirect to the dashboard after 2 seconds
+                    }, 2000); // Redirect after 2 seconds
+                } else {
+                    messageDiv.innerText = 'Invalid token.';
+                    messageDiv.style.color = 'red';
+                }
+            } catch (error) {
+                const errorMessage = error.message || 'Error validating token.';
+                document.getElementById('message').innerText = errorMessage;
+                document.getElementById('message').style.color = 'red';
+            } finally {
+                // Hide loading state
+                document.getElementById('loadingState').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!-- sidebar.html -->
+<div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <h3>Menu</h3>
+        <button id="sidebar-toggle" class="sidebar-toggle">&#9776;</button>
+    </div>
+    <ul class="sidebar-menu">
+        <li><a href="#">Home</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="#">Contact</a></li>
+    </ul>
+</div>
+
+<style>
+    .sidebar {
+        width: 250px;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: #111;
+        padding-top: 20px;
+        color: #00ff00;
+        overflow-x: hidden;
+        transition: 0.5s;
+    }
+
+    .sidebar-header {
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid #00ff00;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .sidebar-menu {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .sidebar-menu li {
+        padding: 15px;
+        border-bottom: 1px solid #00ff00;
+    }
+
+    .sidebar-menu li a {
+        color: #00ff00;
+        text-decoration: none;
+        display: block;
+    }
+
+    .sidebar-menu li a:hover {
+        color: #00cc00;
+    }
+
+    .sidebar-toggle {
+        background: none;
+        border: none;
+        color: #00ff00;
+        font-size: 24px;
+        cursor: pointer;
+        display: none;
+    }
+
+    @media screen and (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            display: none;
+        }
+
+        .sidebar.active {
+            display: block;
+        }
+
+        .sidebar-menu li {
+            float: none;
+            border-bottom: 1px solid #00ff00;
+        }
+
+        .sidebar-toggle {
+            display: block;
+        }
+    }
+</style>
+
+<script>
+    document.getElementById('sidebar-toggle').addEventListener('click', function() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.classList.toggle('active');
+    });
+</script>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokens</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+        }
+        .tokens-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #111;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            animation: flicker 2s infinite;
+        }
+        @keyframes flicker {
+            0% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
+            100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+        }
+        .list-group-item {
+            background-color: #222;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+        .list-group-item:hover {
+            background-color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="tokens-container">
+        <h2 class="text-center mb-4">Latest Tokens</h2>
+        <div class="list-group" id="token-list">
+            <!-- Tokens will be dynamically added here -->
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Example function to fetch tokens from backend
+        function fetchTokens() {
+            $.getJSON('/api/tokens', function(data) {
+                var tokenList = $('#token-list');
+                tokenList.empty();
+                data.forEach(function(token) {
+                    tokenList.append(`
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">${token.name}</h5>
+                                <small>${token.symbol}</small>
+                            </div>
+                            <p class="mb-1">Price: $${token.price}</p>
+                        </a>
+                    `);
+                });
+            });
+        }
+
+        // Fetch tokens on page load
+        $(document).ready(function() {
+            fetchTokens();
+        });
+    </script>
+</body>
+</html>
