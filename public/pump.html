@@ -215,6 +215,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/config.html">Config</a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -233,77 +236,6 @@
         <ul class="token-list" id="tokenList">
             <!-- Tokens will be dynamically added here -->
         </ul>
-    </div>
-
-    <br>
-    <br>
-    <br>
-
-    <!-- Buy Token Modal -->
-    <div id="buyTokenModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close" aria-label="Close">&times;</span>
-            <h3 class="text-center">Buy Token</h3>
-            <form id="buyTokenForm" style="height: 100%; display: flex; flex-direction: column; justify-content: center;">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="fromAddress">From Address</label>
-                            <input type="text" class="form-control" id="fromAddress" value="So11111111111111111111111111111111111111112" readonly>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="tokenMint">Token Mint</label>
-                            <input type="text" class="form-control" id="tokenMint" readonly>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="amount">Amount</label>
-                            <input type="number" class="form-control" id="amount" required step="any">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="slippage">Slippage</label>
-                            <input type="number" class="form-control" id="slippage">
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="tipMiner">Tip Miner</label>
-                            <input type="number" class="form-control" id="tipMiner" required step="any">
-                        </div>
-                    </div>
-                </div>
-                <!-- Stop Loss and Take Profit on the same row -->
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="stopLoss">Stop Loss (Optional)</label>
-                            <input type="number" class="form-control" id="stopLoss">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="takeProfit">Take Profit (Optional)</label>
-                            <input type="number" class="form-control" id="takeProfit">
-                        </div>
-                    </div>
-                </div>
-                <!-- Centered Button -->
-                <div class="row">
-                    <div class="col-md-12 text-center">
-                        <button type="submit" class="btn btn-primary">Buy</button>
-                    </div>
-                </div>
-            </form>
-        </div>
     </div>
 
     <!-- Loading, Success, and Error Messages Overlay -->
@@ -330,227 +262,183 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-    <script>        document.addEventListener('DOMContentLoaded', () => {
-
-const getCookieValue = (name) => {
-            if (typeof document === 'undefined') {
-                return null;
-            }
-            const cookies = document.cookie.split(';');
-            const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
-            return cookie ? cookie.split('=')[1] : null;
-        };
-
-        const checkAuth = () => {
-const token = getCookieValue('token');
-const telegramId = getCookieValue('telegramId');
-
-if (!token || token === 'false' || !telegramId) {
-   window.location.href = '/';
-   return false;
-}
-return true;
-};
-
-
-
-       if (!checkAuth()) {
-           return;
-       }
-
-
-
-        const tokenListElement = document.getElementById('tokenList');
-        const buyTokenModal = document.getElementById('buyTokenModal');
-        const loadingState = document.getElementById('loadingState');
-        const buyTokenForm = document.getElementById('buyTokenForm');
-        const tokenMintInput = document.getElementById('tokenMint');
-        const closeButton = document.querySelector('.close');
-
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const successOverlay = document.getElementById('successOverlay');
-        const errorOverlay = document.getElementById('errorOverlay');
-        const errorMessageText = document.getElementById('errorMessageText');
-
-        let isFirstLoad = true; // Flag to check if it's the first page load
-
-        const formatTimestamp = (timestamp) => {
-            const date = new Date(timestamp);
-            return date.toLocaleString();
-        };
-
-        const handleBuyToken = (token) => {
-            tokenMintInput.value = token.data.mint;
-            buyTokenModal.style.display = 'block';
-        };
-
-        const fetchpumpPools = async () => {
-            // Show loading state only for the first time
-            if (isFirstLoad) {
-                loadingState.style.display = 'block';
-                isFirstLoad = false;
-            }
-
-            try {
-                const response = await fetch('https://project25backend.onrender.com/api/v1/pump-pools');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch pump pools');
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const getCookieValue = (name) => {
+                if (typeof document === 'undefined') {
+                    return null;
                 }
-                const data = await response.json();
-                renderTokens(data);
-            } catch (error) {
-                console.error('Error fetching pump pools:', error);
-                alert('Failed to fetch pump pools. Please try again later.');
-            } finally {
-                // Hide loading state after the first load and during subsequent refreshes
-                loadingState.style.display = 'none';
+                const cookies = document.cookie.split(';');
+                const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
+                return cookie ? cookie.split('=')[1] : null;
+            };
+
+            const checkAuth = () => {
+                const token = getCookieValue('token');
+                const telegramId = getCookieValue('telegramId');
+
+                if (!token || token === 'false' || !telegramId) {
+                    window.location.href = '/';
+                    return false;
+                }
+                return true;
+            };
+
+            if (!checkAuth()) {
+                return;
             }
-        };
 
-        const renderTokens = (tokens) => {
-            // Clear the current list
-            tokenListElement.innerHTML = '';
+            const tokenListElement = document.getElementById('tokenList');
+            const loadingState = document.getElementById('loadingState');
 
-            // Sort tokens by timestamp in descending order (latest token first)
-            tokens.sort((a, b) => b.timestamp - a.timestamp);
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const successOverlay = document.getElementById('successOverlay');
+            const errorOverlay = document.getElementById('errorOverlay');
+            const errorMessageText = document.getElementById('errorMessageText');
 
-            const batchSize = 50;
-            let index = 0;
+            let isFirstLoad = true; // Flag to check if it's the first page load
 
-            const renderBatch = () => {
-                const end = Math.min(index + batchSize, tokens.length);
-                for (let i = index; i < end; i++) {
-                    const token = tokens[i];
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <div>Name: ${token.data.name}</div>
-                        <div>Base Address: ${token.data.mint}</div>
-                        <div>Status: Tradable</div>
-                        <div>Timestamp: ${formatTimestamp(token.timestamp)}</div>
-                        <div>Tokens Pooled: ${token.data.vTokensInBondingCurve}</div>
-                        <div>SOL Pooled: ${token.data.vSolInBondingCurve}</div>
-                        <button class="mt-2 btn btn-buy" data-token='${JSON.stringify(token)}'>Buy</button>
-                    `;
+            const formatTimestamp = (timestamp) => {
+                const date = new Date(timestamp);
+                return date.toLocaleString();
+            };
 
-                    // Add the 'new-token' class to the most recent token
-                    if (i === 0) {
-                        li.classList.add('new-token');
+            const fetchpumpPools = async () => {
+                // Show loading state only for the first time
+                if (isFirstLoad) {
+                    loadingState.style.display = 'block';
+                    isFirstLoad = false;
+                }
+
+                try {
+                    const response = await fetch('https://project25backend.onrender.com/api/v1/pump-pools');
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch pump pools');
                     }
-
-                    tokenListElement.appendChild(li); // Append each token to the list
-                }
-
-                index = end;
-                if (index < tokens.length) {
-                    requestAnimationFrame(renderBatch);
-                } else {
-                    // Add event listeners to buttons
-                    document.querySelectorAll('.btn-buy').forEach(button => {
-                        button.addEventListener('click', () => {
-                            const token = JSON.parse(button.getAttribute('data-token'));
-                            handleBuyToken(token);
-                        });
-                    });
+                    const data = await response.json();
+                    renderTokens(data);
+                } catch (error) {
+                    console.error('Error fetching pump pools:', error);
+                } finally {
+                    // Hide loading state after the first load and during subsequent refreshes
+                    loadingState.style.display = 'none';
                 }
             };
 
-            requestAnimationFrame(renderBatch);
-        };
+            const renderTokens = (tokens) => {
+                // Clear the current list
+                tokenListElement.innerHTML = '';
 
-        // Fetch data initially
-        fetchpumpPools();
+                // Sort tokens by timestamp in descending order (latest token first)
+                tokens.sort((a, b) => b.timestamp - a.timestamp);
 
-        // Poll the API every 5 seconds
-        setInterval(fetchpumpPools, 20000);
+                const batchSize = 50;
+                let index = 0;
 
-        // Close modals when clicking outside the content area
-        document.addEventListener('click', (event) => {
-            if (event.target.classList.contains('modal')) {
-                buyTokenModal.style.display = 'none';
-            }
-        });
+                const renderBatch = () => {
+                    const end = Math.min(index + batchSize, tokens.length);
+                    for (let i = index; i < end; i++) {
+                        const token = tokens[i];
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <div>Name: ${token.data.name}</div>
+                            <div>Base Address: ${token.data.mint}</div>
+                            <div>Status: Tradable</div>
+                            <div>Timestamp: ${formatTimestamp(token.timestamp)}</div>
+                            <div>Tokens Pooled: ${token.data.vTokensInBondingCurve}</div>
+                            <div>SOL Pooled: ${token.data.vSolInBondingCurve}</div>
+                            <button class="mt-2 btn btn-buy" data-token='${JSON.stringify(token)}'>Buy</button>
+                        `;
 
-        closeButton.addEventListener('click', () => {
-            buyTokenModal.style.display = 'none';
-        });
+                        // Add the 'new-token' class to the most recent token
+                        if (i === 0) {
+                            li.classList.add('new-token');
+                        }
 
-        const showLoading = () => {
-            loadingOverlay.style.display = 'flex';
-        };
+                        tokenListElement.appendChild(li); // Append each token to the list
+                    }
 
-        const hideLoading = () => {
-            loadingOverlay.style.display = 'none';
-        };
+                    index = end;
+                    if (index < tokens.length) {
+                        requestAnimationFrame(renderBatch);
+                    } else {
+                        // Add event listeners to buttons
+                        document.querySelectorAll('.btn-buy').forEach(button => {
+                            button.addEventListener('click', () => {
+                                const token = JSON.parse(button.getAttribute('data-token'));
+                                handleBuyToken(token);
+                            });
+                        });
+                    }
+                };
 
-        const showSuccess = () => {
-            successOverlay.style.display = 'flex';
-            setTimeout(() => {
-                successOverlay.style.display = 'none';
-            }, 3000);
-        };
+                requestAnimationFrame(renderBatch);
+            };
 
-        const showError = (message) => {
-            errorMessageText.textContent = message;
-            errorOverlay.style.display = 'flex';
-            setTimeout(() => {
-                errorOverlay.style.display = 'none';
-            }, 3000);
-        };
+            // Fetch data initially
+            fetchpumpPools();
 
-        
+            // Poll the API every 5 seconds
+            setInterval(fetchpumpPools, 20000);
 
+            const showLoading = () => {
+                loadingOverlay.style.display = 'flex';
+            };
 
+            const hideLoading = () => {
+                loadingOverlay.style.display = 'none';
+            };
 
-        buyTokenForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const telegramId = getCookieValue('telegramId');
+            const showSuccess = () => {
+                successOverlay.style.display = 'flex';
+                setTimeout(() => {
+                    successOverlay.style.display = 'none';
+                }, 3000);
+            };
 
-const outputMint = document.getElementById('tokenMint').value;
-const amount = document.getElementById('amount').value;
-const slippage = document.getElementById('slippage').value;
-const tipAmount = document.getElementById('tipMiner').value;
-const manualStopLoss = document.getElementById('stopLoss').value;
-const manualTakeProfit = document.getElementById('takeProfit').value;
-const inputMint = 'So11111111111111111111111111111111111111112'
+            const showError = (message) => {
+                errorMessageText.textContent = message;
+                errorOverlay.style.display = 'flex';
+                setTimeout(() => {
+                    errorOverlay.style.display = 'none';
+                }, 3000);
+            };
 
-            showLoading();
+            const handleBuyToken = async (token) => {
+                const telegramId = getCookieValue('telegramId');
+                const outputMint = token.data.mint;
+                const inputMint = 'So11111111111111111111111111111111111111112';
 
-            try {
-                const response = await fetch('https://project25backend.onrender.com/api/v1/trade/buy-token', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        inputMint,
-        outputMint,
-        amount,
-        slippage,
-        tipAmount,
-        telegramId,
-        manualStopLoss,
-        manualTakeProfit
-                    })
-                });
+                showLoading();
 
-                const data = await response.json();
+                try {
+                    const response = await fetch('https://project25backend.onrender.com/api/v1/trade/buy-token', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            inputMint,
+                            outputMint,
+                            telegramId
+                        })
+                    });
 
-                if (response.ok) {
-                    showSuccess();
-                } else {
-                    showError(data.message || 'Transaction failed');
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showSuccess();
+                    } else {
+                        showError(data.message || 'Transaction failed');
+                    }
+                } catch (error) {
+                    console.error('Error submitting buy transaction:', error);
+                    showError('An error occurred. Please try again.');
+                } finally {
+                    hideLoading();
                 }
-            } catch (error) {
-                console.error('Error submitting buy transaction:', error);
-                showError('An error occurred. Please try again.');
-            } finally {
-                hideLoading();
-                buyTokenModal.style.display = 'none';
-            }
+            };
         });
-
-    });
-
     </script>
 </body>
 </html>

@@ -55,13 +55,19 @@
         .trade-row-negative {
             background-color: #8B0000; /* Dark Red */
         }
-        .sell-button {
+        .sell-button, .retry-button, .update-status-button {
             background-color: #8B0000; /* Dark Red */
             color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 5px;
         }
         .retry-button {
             background-color: #006400; /* Dark Green */
-            color: white;
+        }
+        .update-status-button {
+            background-color: #006400; /* Dark Green */
         }
         .modal {
             display: none;
@@ -176,6 +182,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/config.html">Config</a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -232,35 +241,6 @@
         </div>
     </div>
 
-      <!-- Retry Transaction Modal -->
-      <div id="retryModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close" id="closeRetryModal">&times;</span>
-            <h3>Retry Transaction</h3>
-            <div class="form-group">
-                <label for="fromAddress">From Address</label>
-                <input type="text" id="fromAddress" class="form-control" placeholder="From Address" readonly>
-            </div>
-            <div class="form-group">
-                <label for="toAddress">To Address</label>
-                <input type="text" id="toAddress" class="form-control" value="So11111111111111111111111111111111111111112" readonly>
-            </div>
-            <div class="form-group">
-                <label for="retryAmount">Amount</label>
-                <input type="number" id="retryAmount" class="form-control" placeholder="Enter Amount" required>
-            </div>
-            <div class="form-group">
-                <label for="retrySlippage">Slippage</label>
-                <input type="number" id="retrySlippage" class="form-control" placeholder="Enter Slippage" required>
-            </div>
-            <div class="form-group">
-                <label for="retryTipMiner">Tip Miner</label>
-                <input type="number" id="retryTipMiner" class="form-control" placeholder="Enter Tip Miner" required>
-            </div>
-            <button id="confirmRetry" class="btn btn-success">Confirm</button>
-        </div>
-    </div>
-
     <!-- Sell Transaction Modal -->
     <div id="sellModal" class="modal" style="display: none;">
         <div class="modal-content">
@@ -283,15 +263,29 @@
                     <option value="25">25%</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="sellSlippage">Slippage</label>
-                <input type="number" id="sellSlippage" class="form-control" placeholder="Enter Slippage" required>
-            </div>
-            <div class="form-group">
-                <label for="sellTipMiner">Tip Miner</label>
-                <input type="number" id="sellTipMiner" class="form-control" placeholder="Enter Tip Miner" required>
-            </div>
             <button id="confirmSell" class="btn btn-success">Confirm</button>
+        </div>
+    </div>
+
+    <!-- Update Trade Status Modal -->
+    <div id="updateStatusModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" id="closeUpdateStatusModal">&times;</span>
+            <h3>Update Trade Status</h3>
+            <div class="form-group">
+                <label for="updateStatusContractAddress">Contract Address</label>
+                <input type="text" id="updateStatusContractAddress" class="form-control" placeholder="Contract Address" readonly>
+            </div>
+            <div class="form-group">
+                <label for="updateStatusSelect">New Status</label>
+                <select id="updateStatusSelect" class="form-control">
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Failed">Failed</option>
+                    <option value="Sold">Sold</option>
+                </select>
+            </div>
+            <button id="confirmUpdateStatus" class="btn btn-success">Confirm</button>
         </div>
     </div>
 
@@ -305,7 +299,7 @@
 
     <div id="successOverlay" class="message-overlay" style="display: none;">
         <div class="message-content success">
-            <span>Transaction Successful!</span>
+            <span>Successful!</span>
         </div>
     </div>
 
@@ -406,28 +400,11 @@
             renderSelectedTrade();
         };
 
-        const handleRetryClick = (trade) => {
-            retryTrade = trade;
-            showModal('retryModal');
-            document.getElementById('fromAddress').value = trade.contractAddress;
-            document.getElementById('retryAmount').value = trade.amount;
-        };
-
-        const handleSellClick = (trade) => {
-            sellTrade = trade;
-            showModal('sellModal');
-            document.getElementById('sellFromAddress').value = trade.contractAddress;
-        };
-
-        const handleRetryTransaction = async () => {
+        const handleRetryClick = async (trade) => {
             const telegramId = getCookieValue('telegramId');
-            const outputMint = document.getElementById('fromAddress').value;
-            const inputMint = document.getElementById('toAddress').value;
-            const amount = document.getElementById('retryAmount').value;
-            const slippage = document.getElementById('retrySlippage').value;
-            const tipAmount = document.getElementById('retryTipMiner').value;
+            const outputMint = trade.contractAddress;
+            const inputMint = 'So11111111111111111111111111111111111111112';
 
-            hideModal('retryModal');
             showLoading();
 
             try {
@@ -439,9 +416,6 @@
                     body: JSON.stringify({
                         inputMint,
                         outputMint,
-                        amount,
-                        slippage,
-                        tipAmount,
                         telegramId,
                     })
                 });
@@ -468,18 +442,27 @@
                 showError('An error occurred. Please try again.');
             } finally {
                 hideLoading();
-                hideModal('retryModal');
             }
+        };
+
+        const handleSellClick = (trade) => {
+            sellTrade = trade;
+            showModal('sellModal');
+            document.getElementById('sellFromAddress').value = trade.contractAddress;
+        };
+
+        const handleUpdateStatusClick = (trade) => {
+            selectedTrade = trade;
+            showModal('updateStatusModal');
+            document.getElementById('updateStatusContractAddress').value = trade.contractAddress;
         };
 
         // Function to handle sell transaction
         const handleSellTransaction = async () => {
             const telegramId = getCookieValue('telegramId');
             const fromMint = document.getElementById('sellFromAddress').value;
-            const toMint = document.getElementById('sellToAddress').value;
+            const toMint = 'So11111111111111111111111111111111111111112';
             const sellPercentage = document.getElementById('sellPercentage').value;
-            const slippage = document.getElementById('sellSlippage').value;
-            const priorityFee = document.getElementById('sellTipMiner').value;
 
             hideModal('sellModal');
 
@@ -495,8 +478,6 @@
                         telegramId,
                         fromMint,
                         toMint,
-                        slippage,
-                        priorityFee,
                         sellPercentage,
                     })
                 });
@@ -527,6 +508,55 @@
             }
         };
 
+        const handleUpdateStatusTransaction = async () => {
+            const telegramId = getCookieValue('telegramId');
+            const contractAddress = document.getElementById('updateStatusContractAddress').value;
+            const newStatus = document.getElementById('updateStatusSelect').value;
+
+            hideModal('updateStatusModal');
+
+            showLoading();
+
+            try {
+                const response = await fetch(`${BASE_URL}/trade/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        telegramId,
+                        contractAddress,
+                        newStatus,
+                    })
+                });
+
+                const contentType = response.headers.get("content-type");
+                let data;
+
+                if (contentType && contentType.includes("application/json")) {
+                    data = await response.json();
+                } else {
+                    const text = await response.text();
+                    console.error('Expected JSON but received:', text);
+                    showError('Unexpected response from server.');
+                    return;
+                }
+
+                if (response.ok) {
+                    showSuccess();
+                    fetchTrades(); // Refresh trades after update
+                } else {
+                    showError(data.message || 'Transaction failed');
+                }
+            } catch (error) {
+                console.error('Error submitting update status transaction:', error);
+                showError('An error occurred. Please try again.');
+            } finally {
+                hideLoading();
+                hideModal('updateStatusModal');
+            }
+        };
+
         const renderSelectedTrade = () => {
             const selectedTradeDiv = document.createElement('div');
             selectedTradeDiv.className = 'mt-4 p-4 border border-gray-700 bg-gray-900 text-white';
@@ -538,89 +568,130 @@
             document.querySelector('.trades-container').appendChild(selectedTradeDiv);
         };
 
+      
         const renderTrades = () => {
-            const tradeList = document.getElementById('trade-list');
-            tradeList.innerHTML = '';
+    const tradeList = document.getElementById('trade-list');
+    tradeList.innerHTML = '';
 
-            const filteredTrades = trades.filter(trade => {
-                const statusMatches = filterStatus === 'All' || trade.status === filterStatus;
-                const blockchainMatches = filterBlockchain === 'All' || trade.blockchain === filterBlockchain;
-                return statusMatches && blockchainMatches;
-            });
+    const filteredTrades = trades.filter(trade => {
+        const statusMatches = filterStatus === 'All' || trade.status === filterStatus;
+        const blockchainMatches = filterBlockchain === 'All' || trade.blockchain === filterBlockchain;
+        return statusMatches && blockchainMatches;
+    });
 
-            filteredTrades.reverse().forEach((trade, index) => {
-                const row = document.createElement('tr');
-                row.className = trade.percentageChange >= 0 ? 'trade-row-positive' : 'trade-row-negative';
+    filteredTrades.reverse().forEach((trade, index) => {
+        const row = document.createElement('tr');
+        row.className = trade.percentageChange >= 0 ? 'trade-row-positive' : 'trade-row-negative';
 
-                const serialNumberCell = document.createElement('td');
-                serialNumberCell.className = 'py-2 px-4 text-center';
-                serialNumberCell.textContent = index + 1;
-                row.appendChild(serialNumberCell);
+        const serialNumberCell = document.createElement('td');
+        serialNumberCell.className = 'py-2 px-4 text-center';
+        serialNumberCell.textContent = index + 1;
+        row.appendChild(serialNumberCell);
 
-                const contractAddressCell = document.createElement('td');
-                contractAddressCell.className = 'py-2 px-4 text-center';
-                contractAddressCell.textContent = formatContractAddress(trade.contractAddress);
-                row.appendChild(contractAddressCell);
+        const contractAddressCell = document.createElement('td');
+        contractAddressCell.className = 'py-2 px-4 text-center';
+        contractAddressCell.textContent = formatContractAddress(trade.contractAddress);
+        row.appendChild(contractAddressCell);
 
-                const nameCell = document.createElement('td');
-                nameCell.className = 'py-2 px-4 text-center';
-                nameCell.textContent = trade.name;
-                row.appendChild(nameCell);
+        const nameCell = document.createElement('td');
+        nameCell.className = 'py-2 px-4 text-center';
+        nameCell.textContent = trade.name;
+        row.appendChild(nameCell);
 
-                const stopLossCell = document.createElement('td');
-                stopLossCell.className = 'py-2 px-4 text-center';
-                stopLossCell.textContent = trade.stopLoss;
-                row.appendChild(stopLossCell);
+        const stopLossCell = document.createElement('td');
+        stopLossCell.className = 'py-2 px-4 text-center';
+        stopLossCell.textContent = trade.stopLoss;
+        row.appendChild(stopLossCell);
 
-                const takeProfitCell = document.createElement('td');
-                takeProfitCell.className = 'py-2 px-4 text-center';
-                takeProfitCell.textContent = trade.takeProfit;
-                row.appendChild(takeProfitCell);
+        const takeProfitCell = document.createElement('td');
+        takeProfitCell.className = 'py-2 px-4 text-center';
+        takeProfitCell.textContent = trade.takeProfit;
+        row.appendChild(takeProfitCell);
 
-                const amountCell = document.createElement('td');
-                amountCell.className = 'py-2 px-4 text-center';
-                amountCell.textContent = trade.amount;
-                row.appendChild(amountCell);
+        const amountCell = document.createElement('td');
+        amountCell.className = 'py-2 px-4 text-center';
+        amountCell.textContent = trade.amount;
+        row.appendChild(amountCell);
 
-                const pnlCell = document.createElement('td');
-                pnlCell.className = 'py-2 px-4 text-center';
-                pnlCell.innerHTML = formatPnL(trade.percentageChange);
-                row.appendChild(pnlCell);
+        const pnlCell = document.createElement('td');
+        pnlCell.className = 'py-2 px-4 text-center';
+        pnlCell.innerHTML = formatPnL(trade.percentageChange);
+        row.appendChild(pnlCell);
 
-                const blockchainCell = document.createElement('td');
-                blockchainCell.className = 'py-2 px-4 text-center';
-                blockchainCell.textContent = trade.blockchain;
-                row.appendChild(blockchainCell);
+        const blockchainCell = document.createElement('td');
+        blockchainCell.className = 'py-2 px-4 text-center';
+        blockchainCell.textContent = trade.blockchain;
+        row.appendChild(blockchainCell);
 
-                const statusCell = document.createElement('td');
-                statusCell.className = 'py-2 px-4 text-center';
-                statusCell.textContent = trade.status;
-                row.appendChild(statusCell);
+        const statusCell = document.createElement('td');
+        statusCell.className = 'py-2 px-4 text-center';
+        statusCell.textContent = trade.status;
+        row.appendChild(statusCell);
 
-                const actionCell = document.createElement('td');
-                actionCell.className = 'py-2 px-4 text-center';
+        const actionCell = document.createElement('td');
+        actionCell.className = 'py-2 px-4 text-center';
 
-                if (trade.status !== 'Sold') {
-                    if (trade.status === 'Completed') {
-                        const sellButton = document.createElement('button');
-                        sellButton.className = 'sell-button px-4 py-2 rounded-lg mr-2';
-                        sellButton.textContent = 'Sell';
-                        sellButton.addEventListener('click', () => handleSellClick(trade));
-                        actionCell.appendChild(sellButton);
-                    } else {
-                        const retryButton = document.createElement('button');
-                        retryButton.className = 'retry-button px-4 py-2 rounded-lg';
-                        retryButton.textContent = 'Retry';
-                        retryButton.addEventListener('click', () => handleRetryClick(trade));
-                        actionCell.appendChild(retryButton);
-                    }
-                }
+        if (trade.status !== 'Sold') {
+            if (trade.status === 'Completed') {
+                const sellButton = document.createElement('button');
+                sellButton.textContent = 'Sell';
+                Object.assign(sellButton.style, {
+                    fontSize: '0.9rem',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    backgroundColor: '#f56565',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    margin: '4px 0',
+                    minWidth: '80px',
+                    textAlign: 'center',
+                });
+                sellButton.addEventListener('click', () => handleSellClick(trade));
+                actionCell.appendChild(sellButton);
+            } else {
+                const retryButton = document.createElement('button');
+                retryButton.textContent = 'Retry';
+                Object.assign(retryButton.style, {
+                    fontSize: '0.9rem',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    backgroundColor: '#3182ce',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    margin: '4px 0',
+                    minWidth: '80px',
+                    textAlign: 'center',
+                });
+                retryButton.addEventListener('click', () => handleRetryClick(trade));
+                actionCell.appendChild(retryButton);
+            }
+        }
 
-                row.appendChild(actionCell);
-                tradeList.appendChild(row);
-            });
-        };
+        const updateStatusButton = document.createElement('button');
+        updateStatusButton.textContent = 'Status';
+        Object.assign(updateStatusButton.style, {
+            fontSize: '0.9rem',
+            padding: '6px 12px',
+            borderRadius: '6px',
+            backgroundColor: '#48bb78',
+            color: 'white',
+            border: 'none',
+            cursor: 'pointer',
+            margin: '4px 0',
+            minWidth: '80px',
+            textAlign: 'center',
+        });
+        updateStatusButton.addEventListener('click', () => handleUpdateStatusClick(trade));
+        actionCell.appendChild(updateStatusButton);
 
+        row.appendChild(actionCell);
+        tradeList.appendChild(row);
+    });
+};
+
+      
         const fetchTrades = async () => {
             try {
                 const telegramId = getCookieValue('telegramId');
@@ -743,16 +814,16 @@
         document.getElementById('blockchainFilter').addEventListener('change', (e) => setFilterBlockchain(e.target.value));
 
         // Event listeners for modal close buttons
-        document.getElementById('closeRetryModal').addEventListener('click', () => hideModal('retryModal'));
         document.getElementById('closeSellModal').addEventListener('click', () => hideModal('sellModal'));
+        document.getElementById('closeUpdateStatusModal').addEventListener('click', () => hideModal('updateStatusModal'));
 
         // Event listeners for modal confirm buttons
-        document.getElementById('confirmRetry').addEventListener('click', async () => {
-            await handleRetryTransaction();
-        });
-
         document.getElementById('confirmSell').addEventListener('click', async () => {
             await handleSellTransaction();
+        });
+
+        document.getElementById('confirmUpdateStatus').addEventListener('click', async () => {
+            await handleUpdateStatusTransaction();
         });
 
         // Fetch trades on page load

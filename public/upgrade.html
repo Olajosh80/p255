@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upgrade</title>
+    <title>Upgrade Your Plan</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -11,25 +11,50 @@
             color: #00ff00;
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .navbar {
+            background-color: #111 !important;
+        }
+        .navbar-brand, .nav-link {
+            color: #00ff00 !important;
+        }
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(0, 255, 0, 0.5)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
         }
         .upgrade-container {
-            max-width: 600px;
-            margin: 50px auto;
+            max-width: 1200px;
             padding: 20px;
             background-color: #111;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
             animation: flicker 2s infinite;
+            text-align: center;
         }
         @keyframes flicker {
             0% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
             50% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
             100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
         }
-        .form-control {
-            background-color: #222;
-            color: #00ff00;
+        .plan-box {
+            background-color: #1a1a1a;
             border: 1px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px;
+            transition: transform 0.3s;
+        }
+        .plan-box:hover {
+            transform: scale(1.05);
+        }
+        .plan-box h2 {
+            color: #00ff00;
+        }
+        .plan-box p {
+            color: #00cc00;
         }
         .btn-primary {
             background-color: #00ff00;
@@ -43,95 +68,86 @@
     </style>
 </head>
 <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
+        <a class="navbar-brand" href="/">NOVI</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/raydium.html">Raydium</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pump.html">Pump</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/upgrade.html">Upgrade</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/trades.html">Trades</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/config.html">Config</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
-        <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
-            <a class="navbar-brand" href="/">NOVI</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="/">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/raydium.html">Raydium</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/pump.html">Pump</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/upgrade.html">Upgrade</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/trades.html">Trades</a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-    
-
-        <br>
-        <br>
-        <br>
-        <br>
     <div class="upgrade-container">
-        <h2 class="text-center mb-4">Upgrade Your Account</h2>
-        <form>
-            <div class="form-group">
-                <label for="plan">Select Plan</label>
-                <select class="form-control" id="plan">
-                    <option>Basic</option>
-                    <option>Pro</option>
-                    <option>Premium</option>
-                </select>
+        <h1 class="text-center mb-5">Upgrade Your Plan</h1>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="plan-box">
+                    <h2>Basic</h2>
+                    <p>0.00001 ETH/month</p>
+                    <ul class="list-unstyled">
+                        <li>1 Website</li>
+                        <li>Basic Support</li>
+                        <li>10Ghttps://project25backend.onrender.comB Storage</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="handlePayment('Basic')">Pay Now</button>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="payment-method">Payment Method</label>
-                <select class="form-control" id="payment-method">
-                    <option>Credit Card</option>
-                    <option>PayPal</option>
-                    <option>Bitcoin</option>
-                </select>
+            <div class="col-md-4">
+                <div class="plan-box">
+                    <h2>Pro</h2>
+                    <p>20 ETH/month</p>
+                    <ul class="list-unstyled">
+                        <li>5 Websites</li>
+                        <li>Priority Support</li>
+                        <li>50GB Storage</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="handlePayment('Pro')">Pay Now</button>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Upgrade</button>
-        </form>
+            <div class="col-md-4">
+                <div class="plan-box">
+                    <h2>Premium Plan</h2>
+                    <p>50 ETH/month</p>
+                    <ul class="list-unstyled">
+                        <li>Unlimited Websites</li>
+                        <li>24/7 Support</li>
+                        <li>1TB Storage</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="handlePayment('Premium Plan')">Pay Now</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
     <script>
-           document.addEventListener('DOMContentLoaded', () => {
-          
-          const getCookieValue = (name) => {
-                      if (typeof document === 'undefined') {
-                          return null;
-                      }
-                      const cookies = document.cookie.split(';');
-                      const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
-                      return cookie ? cookie.split('=')[1] : null;
-                  };
-          
-                  const checkAuth = () => {
-          const token = getCookieValue('token');
-          const telegramId = getCookieValue('telegramId');
-          
-          if (!token || token === 'false' || !telegramId) {
-             window.location.href = '/';
-             return false;
-          }
-          return true;
-          };
-          
-          
-          if (!checkAuth()) {
-                     return;
-                 }
-
-                });      
+        function handlePayment(plan) {
+            alert(`Payment for ${plan} plan initiated.`);
+            // Add your payment logic here
+        }
     </script>
 </body>
 </html>
