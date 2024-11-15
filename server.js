@@ -8,8 +8,8 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Serve static files from the root directory
-app.use(express.static(path.join(__dirname)));
+// Serve static files from the "public" directory
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Route to redirect .html requests to the URL without .html
 app.get('/:page.html', (req, res) => {
@@ -20,7 +20,7 @@ app.get('/:page.html', (req, res) => {
 // Route to handle the actual serving of HTML files without .html
 app.get('/:page', (req, res) => {
     const page = req.params.page;
-    const filePath = path.join(__dirname, `${page}.html`);
+    const filePath = path.join(__dirname, 'public', `${page}.html`);
 
     // Check if the file exists
     res.sendFile(filePath, (err) => {
@@ -32,7 +32,7 @@ app.get('/:page', (req, res) => {
 
 // Serve index.html for the root route
 app.get('/', (req, res) => {
-    const filePath = path.join(__dirname, 'index.html');
+    const filePath = path.join(__dirname, 'public', 'index.html');
     res.sendFile(filePath, (err) => {
         if (err) {
             res.status(500).send('Internal Server Error');
