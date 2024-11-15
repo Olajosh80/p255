@@ -70,18 +70,21 @@
                     <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/raydium">Raydium</a>
+                    <a class="nav-link" href="/raydium.html">Raydium</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/pump">Pump</a>
+                    <a class="nav-link" href="/pump.html">Pump</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/upgrade">Upgrade</a>
+                    <a class="nav-link" href="/upgrade.html">Upgrade</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
             </ul>
         </div>
     </nav>
-    
+
     <div class="login-container">
         <h2 class="text-center mb-4">Welcome to NoviPool</h2>
         <p class="text-lg mb-6">
@@ -109,7 +112,7 @@
 
             if (token && telegramId) {
                 // If token and telegramId are present, automatically redirect to the dashboard
-                window.location.href = '/dashboard';
+                window.location.href = '/dashboard.html';
             } else {
                 // If not logged in, proceed with token validation from URL
                 const urlParams = new URLSearchParams(window.location.search);
@@ -183,7 +186,7 @@
                     messageDiv.style.color = 'green';
 
                     setTimeout(() => {
-                        window.location.href = '/dashboard'; // Redirect to the dashboard after 2 seconds
+                        window.location.href = '/dashboard.html'; // Redirect to the dashboard after 2 seconds
                     }, 2000); // Redirect after 2 seconds
                 } else {
                     messageDiv.innerText = 'Invalid token.';
