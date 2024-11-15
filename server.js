@@ -11,13 +11,7 @@ const PORT = process.env.PORT || 3000;
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Route to redirect .html requests to the URL without .html
-app.get('/:page.html', (req, res) => {
-    const page = req.params.page;
-    res.redirect(`/${page}`); // Redirect to the path without .html
-});
-
-// Route to handle the actual serving of HTML files without .html
+// Route to handle the actual serving of HTML files with or without .html
 app.get('/:page', (req, res) => {
     const page = req.params.page;
     const filePath = path.join(__dirname, 'public', `${page}.html`);
