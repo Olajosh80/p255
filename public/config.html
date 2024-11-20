@@ -54,6 +54,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/snipe.html">Snipe</a>
+                </li>
             </ul>
         </div>
     </nav>
@@ -102,106 +105,124 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-
-document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => {
           
-          const getCookieValue = (name) => {
-                      if (typeof document === 'undefined') {
-                          return null;
-                      }
-                      const cookies = document.cookie.split(';');
-                      const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
-                      return cookie ? cookie.split('=')[1] : null;
-                  };
-          
-                  const checkAuth = () => {
-          const token = getCookieValue('token');
-          const telegramId = getCookieValue('telegramId');
-          
-          if (!token || token === 'false' || !telegramId) {
-             window.location.href = '/';
-             return false;
-          }
-          return true;
-          };
-          
-          
-          if (!checkAuth()) {
-                     return;
-                 }
-       
-        // Function to fetch configuration data
-        function fetchConfig() {
-            const telegramId = getCookieValue('telegramId');
-            if (!telegramId) {
-                alert('Telegram ID not found in cookies.');
-                return;
-            }
-
-            fetch(`https://project25backend.onrender.com/api/v1/users/getRaydiumConfig/${telegramId}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('takeProfit').value = data.takeProfit;
-                    document.getElementById('stopLoss').value = data.stopLoss;
-                    document.getElementById('minPoolSize').value = data.minPoolSize;
-                    document.getElementById('maxPoolSize').value = data.maxPoolSize;
-                    document.getElementById('tipMiner').value = data.tipMiner;
-                    document.getElementById('amount').value = data.amount;
-                    document.getElementById('slippage').value = data.slippage;
-                })
-                .catch(error => console.error('Error fetching config:', error));
-        }
-
-        // Function to handle form submission
-        document.getElementById('configForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            const takeProfit = document.getElementById('takeProfit').value;
-            const stopLoss = document.getElementById('stopLoss').value;
-            const minPoolSize = document.getElementById('minPoolSize').value;
-            const maxPoolSize = document.getElementById('maxPoolSize').value;
-            const tipMiner = document.getElementById('tipMiner').value;
-            const amount = document.getElementById('amount').value;
-            const slippage = document.getElementById('slippage').value;
-
-            if (tipMiner < 0.002) {
-                alert('Tip Miner must be at least 0.002');
-                return;
-            }
-
-            const config = {
-                takeProfit,
-                stopLoss,
-                minPoolSize,
-                maxPoolSize,
-                tipMiner,
-                amount,
-                slippage
+            const getCookieValue = (name) => {
+                if (typeof document === 'undefined') {
+                    return null;
+                }
+                const cookies = document.cookie.split(';');
+                const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
+                return cookie ? cookie.split('=')[1] : null;
             };
-
-            const telegramId = getCookieValue('telegramId');
-            if (!telegramId) {
-                alert('Telegram ID not found in cookies.');
+            
+            const checkAuth = () => {
+                const token = getCookieValue('token');
+                const telegramId = getCookieValue('telegramId');
+                
+                if (!token || token === 'false' || !telegramId) {
+                    window.location.href = '/';
+                    return false;
+                }
+                return true;
+            };
+            
+            if (!checkAuth()) {
                 return;
             }
 
-            fetch(`https://project25backend.onrender.com/api/v1/users/updateRaydiumConfig/${telegramId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(config)
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('Config updated successfully!');
-                fetchConfig(); // Refresh the form with the updated config
-            })
-            .catch(error => console.error('Error updating config:', error));
+            // Function to fetch configuration data
+            function fetchConfig() {
+                const telegramId = getCookieValue('telegramId');
+                if (!telegramId) {
+                    alert('Telegram ID not found in cookies.');
+                    return;
+                }
+
+                console.log('Fetching config for Telegram ID:', telegramId);
+
+                fetch(`http://localhost:5000/api/v1/users/getRaydiumConfig/${telegramId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok ' + response.statusText);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Config data fetched:', data);
+                        document.getElementById('takeProfit').value = data.takeProfit;
+                        document.getElementById('stopLoss').value = data.stopLoss;
+                        document.getElementById('minPoolSize').value = data.minPoolSize;
+                        document.getElementById('maxPoolSize').value = data.maxPoolSize;
+                        document.getElementById('tipMiner').value = data.tipMiner;
+                        document.getElementById('amount').value = data.amount;
+                        document.getElementById('slippage').value = data.slippage;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching config:', error);
+                        alert('Failed to fetch config. Please try again.');
+                    });
+            }
+
+            // Function to handle form submission
+            document.getElementById('configForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const takeProfit = document.getElementById('takeProfit').value;
+                const stopLoss = document.getElementById('stopLoss').value;
+                const minPoolSize = document.getElementById('minPoolSize').value;
+                const maxPoolSize = document.getElementById('maxPoolSize').value;
+                const tipMiner = document.getElementById('tipMiner').value;
+                const amount = document.getElementById('amount').value;
+                const slippage = document.getElementById('slippage').value;
+
+                if (tipMiner < 0.002) {
+                    alert('Tip Miner must be at least 0.002');
+                    return;
+                }
+
+                const config = {
+                    takeProfit,
+                    stopLoss,
+                    minPoolSize,
+                    maxPoolSize,
+                    tipMiner,
+                    amount,
+                    slippage
+                };
+
+                const telegramId = getCookieValue('telegramId');
+                if (!telegramId) {
+                    alert('Telegram ID not found in cookies.');
+                    return;
+                }
+
+                fetch(`http://localhost:5000/api/v1/users/updateRaydiumConfig/${telegramId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert('Config updated successfully!');
+                    fetchConfig(); // Refresh the form with the updated config
+                })
+                .catch(error => {
+                    console.error('Error updating config:', error);
+                    alert('Failed to update config. Please try again.');
+                });
+            });
+
+            // Fetch config data on page load
+            fetchConfig();
         });
-    });
-        // Fetch config data on page load
-        document.addEventListener('DOMContentLoaded', fetchConfig);
     </script>
 </body>
 </html>

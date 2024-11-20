@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Snipe</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #000;
+      color: #00ff00;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    .config-container {
+      background-color: #111;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    }
+    .btn-primary {
+      background-color: #00ff00;
+      border-color: #00ff00;
+      color: #000;
+    }
+    .btn-primary:hover {
+      background-color: #00cc00;
+      border-color: #00cc00;
+    }
+    .form-group label {
+      font-weight: bold;
+    }
+    .tab-content {
+      margin-top: 20px;
+    }
+    .loading-spinner {
+      border: 4px solid rgba(0, 255, 0, 0.1);
+      border-left-color: #00ff00;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 10px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .message-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .message-content {
+      background-color: #111;
+      padding: 20px;
+      border: 1px solid #00ff00;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 300px;
+    }
+    .message-content.success {
+      border-color: #00cc00;
+    }
+    .message-content.error {
+      border-color: #ff0000;
+    }
+    .scrollable-container {
+      max-height: 80vh; /* Adjust as needed */
+      overflow-y: auto;
+      padding-right: 10px; /* To avoid text being hidden under the scrollbar */
+    }
+
+    /* Responsive styles for mobile */
+    @media (max-width: 768px) {
+      .split-screen {
+        flex-direction: column;
+        height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
+    <a class="navbar-brand" href="/">NOVI</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/raydium.html">Raydium</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/pump.html">Pump</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/upgrade.html">Upgrade</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/trades.html">Trades</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/snipe.html">Snipe</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/config.html">Config</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+  <div class="container mt-3 pt-5">
+    <h2 class="text-center mt-5">Auto Snipe Config</h2>
+    <div class="scrollable-container">
+      <ul class="nav nav-tabs" id="snipeTabs" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="default-snipe-tab" data-toggle="tab" href="#default-snipe" role="tab">Default Snipe</a>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- Default Snipe Section -->
+        <div class="tab-pane fade show active config-container" id="default-snipe" role="tabpanel">
+          <form id="defaultSnipeForm">
+            <div id="defaultConfigFields"></div>
+            <div class="form-group">
+              <label for="tokensToBuy">Tokens to Buy</label>
+              <input type="number" class="form-control" id="tokensToBuy" name="tokensToBuy" placeholder="Enter number of tokens">
+            </div>
+            <div class="form-group">
+              <label>Platform</label><br>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="platformRaydium" name="platform" value="raydium" checked>
+                <label class="form-check-label" for="platformRaydium">Raydium</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" id="platformPump" name="platform" value="pump">
+                <label class="form-check-label" for="platformPump">Pump</label>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary" id="updateDefaultConfig">Update Config</button>
+            <button type="button" class="btn btn-primary ml-2" id="snipeDefault">Snipe</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading, Success, and Error Messages Overlay -->
+  <div id="successOverlay" class="message-overlay" style="display: none;">
+    <div class="message-content success">
+      <span>Transaction Successful!</span>
+    </div>
+  </div>
+
+  <div id="errorOverlay" class="message-overlay" style="display: none;">
+    <div class="message-content error">
+      <span id="errorMessageText"></span>
+    </div>
+  </div>
+
+  <script>
+    const apiUrl = 'http://localhost:5000/api/v1/users/getRaydiumConfig/';
+    const snipeUrlRaydium = 'http://localhost:5000/api/v1/trade/auto-raydiumsnipe';
+    const snipeUrlPump = 'http://localhost:5000/api/v1/trade/auto-pumpsnipe';
+
+    const getCookieValue = (name) => {
+      if (typeof document === 'undefined') {
+        return null;
+      }
+      const cookies = document.cookie.split(';');
+      const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
+      return cookie ? cookie.split('=')[1] : null;
+    };
+
+    const telegramId = getCookieValue('telegramId');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const defaultConfigFields = document.getElementById('defaultConfigFields');
+  
+      const config = await fetchConfig();
+  
+      if (config) {
+        populateFormFields(defaultConfigFields, config);
+      }
+  
+      document.getElementById('updateDefaultConfig').addEventListener('click', () => {
+        const updatedConfig = getFormData('defaultSnipeForm');
+        updateConfig(updatedConfig, 'Default');
+      });
+  
+      document.getElementById('snipeDefault').addEventListener('click', () => {
+        const configData = getFormData('defaultSnipeForm');
+        snipeAction(configData);
+      });
+    });
+
+    async function fetchConfig() {
+      try {
+        const response = await fetch(apiUrl + telegramId);
+        if (!response.ok) throw new Error('Failed to fetch configuration.');
+        return await response.json();
+      } catch (error) {
+        console.error(error);
+        return null;
+      }
+    }
+  
+    function populateFormFields(container, config) {
+      container.innerHTML = '';
+      for (const [key, value] of Object.entries(config)) {
+        container.innerHTML += `
+          <div class="form-group">
+            <label for="${key}">${key}</label>
+            <input type="text" class="form-control" id="${key}" name="${key}" value="${value}">
+          </div>`;
+      }
+    }
+  
+    function getFormData(formId) {
+      const formData = new FormData(document.getElementById(formId));
+      return Object.fromEntries(formData.entries());
+    }
+  
+    async function updateConfig(updatedConfig, type) {
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegramId, type, ...updatedConfig })
+        });
+        if (!response.ok) throw new Error('Failed to update configuration.');
+        alert('Config updated successfully!');
+      } catch (error) {
+        console.error(error);
+        alert('Error updating config.');
+      }
+    }
+  
+    async function snipeAction(configData) {
+      try {
+        const platform = configData.platform;
+        const snipeUrl = platform === 'raydium' ? snipeUrlRaydium : snipeUrlPump;
+        const response = await fetch(snipeUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telegramId, ...configData })
+        });
+        if (!response.ok) throw new Error('Failed to execute snipe action.');
+        showSuccessMessage();
+      } catch (error) {
+        console.error(error);
+        showErrorMessage(error.message);
+      }
+    }
+  
+    function showSuccessMessage() {
+      document.getElementById('successOverlay').style.display = 'flex';
+      setTimeout(() => {
+        document.getElementById('successOverlay').style.display = 'none';
+      }, 2000);
+    }
+  
+    function showErrorMessage(message) {
+      const errorOverlay = document.getElementById('errorOverlay');
+      document.getElementById('errorMessageText').textContent = message;
+      errorOverlay.style.display = 'flex';
+      setTimeout(() => {
+        errorOverlay.style.display = 'none';
+      }, 2000);
+    }
+  </script>
+</body>
+</html>

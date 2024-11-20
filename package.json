@@ -4,11 +4,13 @@
     "dev": "nodemon server.js --ext js,html,css"
   },
   "dependencies": {
+    "axios": "^1.7.7",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "nodemon": "^3.1.7",
     "p25": "file:",
+    "socket.io": "^4.8.1",
     "util": "^0.12.5"
   },
   "name": "p25",

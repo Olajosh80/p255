@@ -216,6 +216,9 @@
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="/snipe.html">Snipe</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="/config.html">Config</a>
                 </li>
             </ul>
@@ -236,6 +239,16 @@
         <ul class="token-list" id="tokenList">
             <!-- Tokens will be dynamically added here -->
         </ul>
+    </div>
+
+    <!-- Subscription Expired Popup -->
+    <div id="subscriptionExpiredPopup" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" id="closeSubscriptionExpiredPopup">&times;</span>
+            <h3>Subscription Expired</h3>
+            <p>Your subscription has expired. Please subscribe to continue using the Buy function.</p>
+            <button class="btn btn-primary" onclick="window.location.href='/upgrade.html'">Subscribe</button>
+        </div>
     </div>
 
     <!-- Loading, Success, and Error Messages Overlay -->
@@ -296,12 +309,55 @@
             const errorOverlay = document.getElementById('errorOverlay');
             const errorMessageText = document.getElementById('errorMessageText');
 
+            const subscriptionExpiredPopup = document.getElementById('subscriptionExpiredPopup');
+            const closeSubscriptionExpiredPopup = document.getElementById('closeSubscriptionExpiredPopup');
+
             let isFirstLoad = true; // Flag to check if it's the first page load
+            let isSubscriptionActive = false; // Flag to check if the subscription is active
 
             const formatTimestamp = (timestamp) => {
                 const date = new Date(timestamp);
                 return date.toLocaleString();
             };
+
+            const fetchSubscriptionStatus = async () => {
+                const telegramId = getCookieValue('telegramId');
+                if (!telegramId) {
+                    alert('Telegram ID not found in cookies.');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`http://localhost:5000/api/v1/subscriptions/getSubsciptions/${telegramId}`);
+                    if (!response.ok) {
+                        isSubscriptionActive = false;
+                        return;
+                    }
+                    const data = await response.json();
+
+                    // console.log(data)
+                    if (data.success) {
+                        if (data.message === "Access allowed for Freemium user." || data.message === "Subscription is active.") {
+                            isSubscriptionActive = true;
+                        } else {
+                            isSubscriptionActive = false;
+                        }
+                    } else {
+                        isSubscriptionActive = false;
+                    }
+                } catch (error) {
+                    console.error('Error fetching subscription status:', error);
+                    alert('Failed to fetch subscription status. Please try again.');
+                }
+            };
+
+            const showSubscriptionExpiredPopup = () => {
+                subscriptionExpiredPopup.style.display = 'flex';
+            };
+
+            closeSubscriptionExpiredPopup.addEventListener('click', () => {
+                subscriptionExpiredPopup.style.display = 'none';
+            });
 
             const fetchpumpPools = async () => {
                 // Show loading state only for the first time
@@ -311,7 +367,7 @@
                 }
 
                 try {
-                    const response = await fetch('https://project25backend.onrender.com/api/v1/pump-pools');
+                    const response = await fetch('http://localhost:5000/api/v1/pump-pools');
                     if (!response.ok) {
                         throw new Error('Failed to fetch pump pools');
                     }
@@ -347,7 +403,6 @@
                             <div>Timestamp: ${formatTimestamp(token.timestamp)}</div>
                             <div>Tokens Pooled: ${token.data.vTokensInBondingCurve}</div>
                             <div>SOL Pooled: ${token.data.vSolInBondingCurve}</div>
-                            <button class="mt-2 btn btn-buy" data-token='${JSON.stringify(token)}'>Buy</button>
                         `;
 
                         // Add the 'new-token' class to the most recent token
@@ -355,31 +410,45 @@
                             li.classList.add('new-token');
                         }
 
+                        // Add Buy button or Subscribe button based on subscription status
+                        const button = document.createElement('button');
+                        if (isSubscriptionActive) {
+                            button.className = 'mt-2 btn btn-buy';
+                            button.textContent = 'Buy';
+                            button.setAttribute('data-token', JSON.stringify(token));
+                            button.addEventListener('click', () => {
+                                const token = JSON.parse(button.getAttribute('data-token'));
+                                handleBuyToken(token);
+                            });
+                        } else {
+                            button.className = 'mt-2 btn btn-primary';
+                            button.textContent = 'Subscribe to Access';
+                            button.addEventListener('click', () => {
+                                window.location.href = '/upgrade.html';
+                            });
+                        }
+                        li.appendChild(button);
+
                         tokenListElement.appendChild(li); // Append each token to the list
                     }
 
                     index = end;
                     if (index < tokens.length) {
                         requestAnimationFrame(renderBatch);
-                    } else {
-                        // Add event listeners to buttons
-                        document.querySelectorAll('.btn-buy').forEach(button => {
-                            button.addEventListener('click', () => {
-                                const token = JSON.parse(button.getAttribute('data-token'));
-                                handleBuyToken(token);
-                            });
-                        });
                     }
                 };
 
                 requestAnimationFrame(renderBatch);
             };
 
-            // Fetch data initially
-            fetchpumpPools();
+            // Fetch subscription status initially
+            fetchSubscriptionStatus().then(() => {
+                // Fetch data initially
+                fetchpumpPools();
 
-            // Poll the API every 5 seconds
-            setInterval(fetchpumpPools, 20000);
+                // Poll the API every 5 seconds
+                setInterval(fetchpumpPools, 20000);
+            });
 
             const showLoading = () => {
                 loadingOverlay.style.display = 'flex';
@@ -412,7 +481,7 @@
                 showLoading();
 
                 try {
-                    const response = await fetch('https://project25backend.onrender.com/api/v1/trade/buy-token', {
+                    const response = await fetch('http://localhost:5000/api/v1/trade/pump-buy', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
