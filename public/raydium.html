@@ -330,7 +330,7 @@
                 }
 
                 try {
-                    const response = await fetch(`http://localhost:5000/api/v1/subscriptions/getSubsciptions/${telegramId}`);
+                    const response = await fetch(`https://project25backend.onrender.com/api/v1/subscriptions/getSubsciptions/${telegramId}`);
                     if (!response.ok) {
                         isSubscriptionActive = false;
                         return;
@@ -363,7 +363,7 @@
                 }
 
                 try {
-                    const response = await fetch('http://localhost:5000/api/v1/raydium-pools');
+                    const response = await fetch('https://project25backend.onrender.com/api/v1/raydium-pools');
                     if (!response.ok) {
                         throw new Error('Failed to fetch Raydium pools');
                     }
@@ -463,7 +463,7 @@
                 showLoading();
 
                 try {
-                    const response = await fetch('http://localhost:5000/api/v1/trade/buy-token', {
+                    const response = await fetch('https://project25backend.onrender.com/api/v1/trade/buy-token', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
