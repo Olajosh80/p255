@@ -211,13 +211,12 @@
                 </select>
             </div>
             <div>
-                <label for="blockchainFilter" class="mr-2">Filter by Blockchain:</label>
-                <select id="blockchainFilter" class="filter-select">
+                <label for="platformFilter" class="mr-2">Filter by Platform:</label>
+                <select id="platformFilter" class="filter-select">
                     <option value="All">All</option>
-                    <option value="Solana">Solana</option>
-                    <option value="Ethereum">Ethereum</option>
-                    <option value="Tron">Tron</option>
-                    <option value="BSC">BSC</option>
+                    <option value="Pump">Pump</option>
+                    <option value="Raydium">Raydium</option>
+                    <option value="Other">Other</option>
                 </select>
             </div>
         </div>
@@ -232,7 +231,7 @@
                         <th>Take Profit</th>
                         <th>Amount</th>
                         <th>PnL</th>
-                        <th>Blockchain</th>
+                        <th>Platform</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -350,7 +349,7 @@
         // State variables
         let trades = [];
         let filterStatus = 'All';
-        let filterBlockchain = 'All';
+        let filterPlatform = 'All';
         let selectedTrade = null;
         let sellTrade = null;
         let retryTrade = null;
@@ -461,56 +460,74 @@
         };
 
         // Function to handle sell transaction
+     
         const handleSellTransaction = async () => {
-            const telegramId = getCookieValue('telegramId');
-            const fromMint = document.getElementById('sellFromAddress').value;
-            const toMint = 'So11111111111111111111111111111111111111112';
-            const sellPercentage = document.getElementById('sellPercentage').value;
+    const telegramId = getCookieValue('telegramId');
+    const fromMint = document.getElementById('sellFromAddress').value;
+    const toMint = 'So11111111111111111111111111111111111111112';
+    const sellPercentage = document.getElementById('sellPercentage').value;
 
-            hideModal('sellModal');
+    hideModal('sellModal');
 
-            showLoading();
+    showLoading();
 
-            try {
-                const response = await fetch(`${BASE_URL}/trade/sell-token`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        telegramId,
-                        fromMint,
-                        toMint,
-                        sellPercentage,
-                    })
-                });
+    try {
+        let response;
+        if (sellTrade.platform === 'raydium') {
+            response = await fetch(`${BASE_URL}/trade/sell-token`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    telegramId,
+                    fromMint,
+                    toMint,
+                    sellPercentage,
+                })
+            });
+        } else if (sellTrade.platform === 'pump') {
+            response = await fetch(`http://localhost:5000/api/v1/trade/pump-sell`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    telegramId,
+                    fromMint,
+                    toMint,
+                    sellPercentage,
+                })
+            });
+        } else {
+            throw new Error('Unsupported platform for sell transaction');
+        }
 
-                const contentType = response.headers.get("content-type");
-                let data;
+        const contentType = response.headers.get("content-type");
+        let data;
 
-                if (contentType && contentType.includes("application/json")) {
-                    data = await response.json();
-                } else {
-                    const text = await response.text();
-                    console.error('Expected JSON but received:', text);
-                    showError('Unexpected response from server.');
-                    return;
-                }
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            const text = await response.text();
+            console.error('Expected JSON but received:', text);
+            showError('Unexpected response from server.');
+            return;
+        }
 
-                if (response.ok) {
-                    showSuccess();
-                } else {
-                    showError(data.message || 'Transaction failed');
-                }
-            } catch (error) {
-                console.error('Error submitting sell transaction:', error);
-                showError('An error occurred. Please try again.');
-            } finally {
-                hideLoading();
-                hideModal('sellModal');
-            }
-        };
-
+        if (response.ok) {
+            showSuccess();
+        } else {
+            showError(data.message || 'Transaction failed');
+        }
+    } catch (error) {
+        console.error('Error submitting sell transaction:', error);
+        showError('An error occurred. Please try again.');
+    } finally {
+        hideLoading();
+        hideModal('sellModal');
+    }
+};
         const handleUpdateStatusTransaction = async () => {
             const telegramId = getCookieValue('telegramId');
             const contractAddress = document.getElementById('updateStatusContractAddress').value;
@@ -578,8 +595,8 @@
 
     const filteredTrades = trades.filter(trade => {
         const statusMatches = filterStatus === 'All' || trade.status === filterStatus;
-        const blockchainMatches = filterBlockchain === 'All' || trade.blockchain === filterBlockchain;
-        return statusMatches && blockchainMatches;
+        const platformMatches = filterPlatform === 'All' || trade.platform === filterPlatform;
+        return statusMatches && platformMatches;
     });
 
     filteredTrades.reverse().forEach((trade, index) => {
@@ -621,10 +638,10 @@
         pnlCell.innerHTML = formatPnL(trade.percentageChange);
         row.appendChild(pnlCell);
 
-        const blockchainCell = document.createElement('td');
-        blockchainCell.className = 'py-2 px-4 text-center';
-        blockchainCell.textContent = trade.blockchain;
-        row.appendChild(blockchainCell);
+        const platformCell = document.createElement('td');
+        platformCell.className = 'py-2 px-4 text-center';
+        platformCell.textContent = trade.platform;
+        row.appendChild(platformCell);
 
         const statusCell = document.createElement('td');
         statusCell.className = 'py-2 px-4 text-center';
@@ -713,8 +730,8 @@
             renderTrades();
         };
 
-        const setFilterBlockchain = (blockchain) => {
-            filterBlockchain = blockchain;
+        const setFilterPlatform = (platform) => {
+            filterPlatform = platform;
             renderTrades();
         };
 
@@ -814,7 +831,7 @@
 
         // Event listeners for filters
         document.getElementById('statusFilter').addEventListener('change', (e) => setFilterStatus(e.target.value));
-        document.getElementById('blockchainFilter').addEventListener('change', (e) => setFilterBlockchain(e.target.value));
+        document.getElementById('platformFilter').addEventListener('change', (e) => setFilterPlatform(e.target.value));
 
         // Event listeners for modal close buttons
         document.getElementById('closeSellModal').addEventListener('click', () => hideModal('sellModal'));
