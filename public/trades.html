@@ -55,7 +55,7 @@
         .trade-row-negative {
             background-color: #8B0000; /* Dark Red */
         }
-        .sell-button, .retry-button, .update-status-button {
+        .sell-button, .retry-button, .view-button {
             background-color: #8B0000; /* Dark Red */
             color: white;
             padding: 8px 16px;
@@ -66,8 +66,8 @@
         .retry-button {
             background-color: #006400; /* Dark Green */
         }
-        .update-status-button {
-            background-color: #006400; /* Dark Green */
+        .view-button {
+            background-color: #333; /* Dark Grey */
         }
         .modal {
             display: none;
@@ -225,10 +225,11 @@
                 <thead>
                     <tr>
                         <th>S/N</th>
-                        <th>Contract Address</th>
+                        <th>Trade ID</th>
+                        <th>Mint</th>
                         <th>Name</th>
-                        <th>Stop Loss</th>
-                        <th>Take Profit</th>
+                        <th>S/L</th>
+                        <th>T/P</th>
                         <th>Amount</th>
                         <th>PnL</th>
                         <th>Platform</th>
@@ -288,6 +289,32 @@
                 </select>
             </div>
             <button id="confirmUpdateStatus" class="btn btn-success">Confirm</button>
+        </div>
+    </div>
+
+    <!-- View Trade Details Modal -->
+    <div id="viewTradeModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" id="closeViewTradeModal">&times;</span>
+            <h3>Trade Details</h3>
+            <div id="tradeDetailsContent">
+                <!-- Trade details will be dynamically added here -->
+            </div>
+
+            <!-- <div class="form-group">
+                <label for="updateStatusSelect">
+                    <span style="color: red; font-size: 0.9em; margin-right: 10px;">Use only in case of status is sold and the token is unsold, change status to completed. Note THIS IS RARE!</span>
+                    Update Status
+                </label>
+                <select id="updateStatusSelect" class="form-control">
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Failed">Failed</option>
+                    <option value="Sold">Sold</option>
+                </select>
+            </div>
+            <button id="confirmUpdateStatus" class="btn btn-success">Update Status</button> -->
+            
         </div>
     </div>
 
@@ -369,6 +396,13 @@
                 return `${address.slice(0, 4)}...${address.slice(-4)}`;
             }
             return address;
+        };
+
+        const formatTradeId = (tradeId) => {
+            if (tradeId.length > 5) {
+                return `...${tradeId.slice(-5)}`;
+            }
+            return tradeId;
         };
 
         const formatPnL = (pnl) => {
@@ -453,10 +487,10 @@
             document.getElementById('sellFromAddress').value = trade.contractAddress;
         };
 
-        const handleUpdateStatusClick = (trade) => {
+        const handleViewClick = (trade) => {
             selectedTrade = trade;
-            showModal('updateStatusModal');
-            document.getElementById('updateStatusContractAddress').value = trade.contractAddress;
+            showModal('viewTradeModal');
+            renderTradeDetails();
         };
 
         // Function to handle sell transaction
@@ -466,6 +500,7 @@
     const fromMint = document.getElementById('sellFromAddress').value;
     const toMint = 'So11111111111111111111111111111111111111112';
     const sellPercentage = document.getElementById('sellPercentage').value;
+    const tradeId = sellTrade.tradeId; // Include tradeId in the payload
 
     hideModal('sellModal');
 
@@ -484,10 +519,11 @@
                     fromMint,
                     toMint,
                     sellPercentage,
+                    tradeId, // Include tradeId in the payload
                 })
             });
         } else if (sellTrade.platform === 'pump') {
-            response = await fetch(`https://project25backend.onrender.com/api/v1/trade/pump-sell`, {
+            response = await fetch(`${BASE_URL}/trade/pump-sell`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -497,6 +533,7 @@
                     fromMint,
                     toMint,
                     sellPercentage,
+                    tradeId, // Include tradeId in the payload
                 })
             });
         } else {
@@ -528,6 +565,8 @@
         hideModal('sellModal');
     }
 };
+     
+
         const handleUpdateStatusTransaction = async () => {
             const telegramId = getCookieValue('telegramId');
             const contractAddress = document.getElementById('updateStatusContractAddress').value;
@@ -608,6 +647,11 @@
         serialNumberCell.textContent = index + 1;
         row.appendChild(serialNumberCell);
 
+        const tradeIdCell = document.createElement('td');
+        tradeIdCell.className = 'py-2 px-4 text-center';
+        tradeIdCell.textContent = formatTradeId(trade.tradeId);
+        row.appendChild(tradeIdCell);
+
         const contractAddressCell = document.createElement('td');
         contractAddressCell.className = 'py-2 px-4 text-center';
         contractAddressCell.textContent = formatContractAddress(trade.contractAddress);
@@ -651,6 +695,23 @@
         const actionCell = document.createElement('td');
         actionCell.className = 'py-2 px-4 text-center';
 
+        const viewButton = document.createElement('button');
+        viewButton.textContent = 'View';
+        Object.assign(viewButton.style, {
+            fontSize: '0.9rem',
+            padding: '6px 12px',
+            borderRadius: '6px',
+            backgroundColor: '#333',
+            color: 'white',
+            border: 'none',
+            cursor: 'pointer',
+            margin: '4px 0',
+            minWidth: '80px',
+            textAlign: 'center',
+        });
+        viewButton.addEventListener('click', () => handleViewClick(trade));
+        actionCell.appendChild(viewButton);
+
         if (trade.status !== 'Sold') {
             if (trade.status === 'Completed') {
                 const sellButton = document.createElement('button');
@@ -689,29 +750,25 @@
             }
         }
 
-        const updateStatusButton = document.createElement('button');
-        updateStatusButton.textContent = 'Status';
-        Object.assign(updateStatusButton.style, {
-            fontSize: '0.9rem',
-            padding: '6px 12px',
-            borderRadius: '6px',
-            backgroundColor: '#48bb78',
-            color: 'white',
-            border: 'none',
-            cursor: 'pointer',
-            margin: '4px 0',
-            minWidth: '80px',
-            textAlign: 'center',
-        });
-        updateStatusButton.addEventListener('click', () => handleUpdateStatusClick(trade));
-        actionCell.appendChild(updateStatusButton);
-
         row.appendChild(actionCell);
         tradeList.appendChild(row);
     });
 };
 
-      
+        const renderTradeDetails = () => {
+            const tradeDetailsContent = document.getElementById('tradeDetailsContent');
+            tradeDetailsContent.innerHTML = `
+                <p><strong>Trade ID:</strong> ${formatTradeId(selectedTrade.tradeId)}</p>
+                <p><strong>Platform:</strong> ${selectedTrade.platform}</p>
+                <p><strong>Active:</strong> ${selectedTrade.isSnipeActive ? 'Yes' : 'No'}</p>
+                <p><strong>Tokens Bought:</strong> ${selectedTrade.tokenBought}</p>
+                <p><strong>Buy Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.buyTx}" target="_blank">View Tx</a></p>
+                <p><strong>Sell Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.sellTx}" target="_blank">View Tx</a></p>
+                <p><strong>Status:</strong> ${selectedTrade.status}</p>
+                <p><strong>Blockchain:</strong> ${selectedTrade.blockchain}</p>
+            `;
+        };
+
         const fetchTrades = async () => {
             try {
                 const telegramId = getCookieValue('telegramId');
@@ -836,6 +893,7 @@
         // Event listeners for modal close buttons
         document.getElementById('closeSellModal').addEventListener('click', () => hideModal('sellModal'));
         document.getElementById('closeUpdateStatusModal').addEventListener('click', () => hideModal('updateStatusModal'));
+        document.getElementById('closeViewTradeModal').addEventListener('click', () => hideModal('viewTradeModal'));
 
         // Event listeners for modal confirm buttons
         document.getElementById('confirmSell').addEventListener('click', async () => {
