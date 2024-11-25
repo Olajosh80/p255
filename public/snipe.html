@@ -90,7 +90,6 @@
 <body>
 
   <!-- Navbar -->
-  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
     <a class="navbar-brand" href="/">NOVI</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -175,6 +174,7 @@
 
   <script>
     const apiUrl = 'https://project25backend.onrender.com/api/v1/users/getRaydiumConfig/';
+    const updateConfigUrl = 'https://project25backend.onrender.com/api/v1/users/updateRaydiumConfig/';
     const snipeUrlRaydium = 'https://project25backend.onrender.com/api/v1/trade/auto-raydiumsnipe';
     const snipeUrlPump = 'https://project25backend.onrender.com/api/v1/trade/auto-pumpsnipe';
 
@@ -200,11 +200,19 @@
   
       document.getElementById('updateDefaultConfig').addEventListener('click', () => {
         const updatedConfig = getFormData('defaultSnipeForm');
+        if (!validateStopLoss(updatedConfig.stopLoss)) {
+          showErrorMessage('Stop Loss must be a negative number.');
+          return;
+        }
         updateConfig(updatedConfig, 'Default');
       });
   
       document.getElementById('snipeDefault').addEventListener('click', () => {
         const configData = getFormData('defaultSnipeForm');
+        if (!validateStopLoss(configData.stopLoss)) {
+          showErrorMessage('Stop Loss must be a negative number.');
+          return;
+        }
         snipeAction(configData);
       });
     });
@@ -238,10 +246,10 @@
   
     async function updateConfig(updatedConfig, type) {
       try {
-        const response = await fetch(apiUrl, {
-          method: 'POST',
+        const response = await fetch(updateConfigUrl + telegramId, {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telegramId, type, ...updatedConfig })
+          body: JSON.stringify(updatedConfig)
         });
         if (!response.ok) throw new Error('Failed to update configuration.');
         alert('Config updated successfully!');
@@ -282,6 +290,11 @@
       setTimeout(() => {
         errorOverlay.style.display = 'none';
       }, 2000);
+    }
+
+    function validateStopLoss(stopLoss) {
+      const stopLossValue = parseFloat(stopLoss);
+      return stopLossValue < 0;
     }
   </script>
 </body>

@@ -76,6 +76,7 @@
             <div class="form-group">
                 <label for="stopLoss">Stop Loss</label>
                 <input type="number" class="form-control" id="stopLoss" name="stopLoss" required>
+                <div id="stopLossError" class="text-danger" style="display: none;">Stop Loss must be a negative number.</div>
             </div>
             <div class="form-group">
                 <label for="minPoolSize">Min Pool Size</label>
@@ -100,13 +101,88 @@
             <button type="submit" class="btn btn-primary">Update Config</button>
         </form>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
     <script>
+        document.getElementById('stopLoss').addEventListener('input', function() {
+            const stopLossValue = parseFloat(this.value);
+            const errorMessage = document.getElementById('stopLossError');
+
+            if (stopLossValue >= 0) {
+                errorMessage.style.display = 'block';
+                this.setCustomValidity('Stop Loss must be a negative number.');
+            } else {
+                errorMessage.style.display = 'none';
+                this.setCustomValidity('');
+            }
+        });
+
+        document.getElementById('configForm').addEventListener('submit', function(event) {
+            const stopLossInput = document.getElementById('stopLoss');
+            const stopLossValue = parseFloat(stopLossInput.value);
+            const errorMessage = document.getElementById('stopLossError');
+
+            if (stopLossValue >= 0) {
+                errorMessage.style.display = 'block';
+                stopLossInput.focus(); // Focus back on the invalid field
+                event.preventDefault(); // Prevent form submission
+                return;
+            } else {
+                errorMessage.style.display = 'none';
+            }
+
+            const takeProfit = document.getElementById('takeProfit').value;
+            const stopLoss = document.getElementById('stopLoss').value;
+            const minPoolSize = document.getElementById('minPoolSize').value;
+            const maxPoolSize = document.getElementById('maxPoolSize').value;
+            const tipMiner = document.getElementById('tipMiner').value;
+            const amount = document.getElementById('amount').value;
+            const slippage = document.getElementById('slippage').value;
+
+            if (tipMiner < 0.002) {
+                alert('Tip Miner must be at least 0.002');
+                return;
+            }
+
+            const config = {
+                takeProfit,
+                stopLoss,
+                minPoolSize,
+                maxPoolSize,
+                tipMiner,
+                amount,
+                slippage
+            };
+
+            const telegramId = getCookieValue('telegramId');
+            if (!telegramId) {
+                alert('Telegram ID not found in cookies.');
+                return;
+            }
+
+            fetch(`https://project25backend.onrender.com/api/v1/users/updateRaydiumConfig/${telegramId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(config)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert('Config updated successfully!');
+                fetchConfig(); // Refresh the form with the updated config
+            })
+            .catch(error => {
+                console.error('Error updating config:', error);
+                alert('Failed to update config. Please try again.');
+            });
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
-          
             const getCookieValue = (name) => {
                 if (typeof document === 'undefined') {
                     return null;
@@ -164,65 +240,13 @@
                     });
             }
 
-            // Function to handle form submission
-            document.getElementById('configForm').addEventListener('submit', function(event) {
-                event.preventDefault();
-
-                const takeProfit = document.getElementById('takeProfit').value;
-                const stopLoss = document.getElementById('stopLoss').value;
-                const minPoolSize = document.getElementById('minPoolSize').value;
-                const maxPoolSize = document.getElementById('maxPoolSize').value;
-                const tipMiner = document.getElementById('tipMiner').value;
-                const amount = document.getElementById('amount').value;
-                const slippage = document.getElementById('slippage').value;
-
-                if (tipMiner < 0.002) {
-                    alert('Tip Miner must be at least 0.002');
-                    return;
-                }
-
-                const config = {
-                    takeProfit,
-                    stopLoss,
-                    minPoolSize,
-                    maxPoolSize,
-                    tipMiner,
-                    amount,
-                    slippage
-                };
-
-                const telegramId = getCookieValue('telegramId');
-                if (!telegramId) {
-                    alert('Telegram ID not found in cookies.');
-                    return;
-                }
-
-                fetch(`https://project25backend.onrender.com/api/v1/users/updateRaydiumConfig/${telegramId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(config)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok ' + response.statusText);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    alert('Config updated successfully!');
-                    fetchConfig(); // Refresh the form with the updated config
-                })
-                .catch(error => {
-                    console.error('Error updating config:', error);
-                    alert('Failed to update config. Please try again.');
-                });
-            });
-
             // Fetch config data on page load
             fetchConfig();
         });
     </script>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
