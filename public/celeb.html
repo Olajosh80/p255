@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Styled Tokens</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #111;
+            color: #fff;
+        }
+        .navbar {
+            background-color: #000; /* Set your preferred background color */
+        }
+        .navbar .navbar-brand, .navbar .nav-link {
+            color: #00ff00; /* Set your preferred text color */
+        }
+        .navbar .navbar-brand:hover, .navbar .nav-link:hover {
+            color: #ffcc00; /* Set the text hover color */
+        }
+        .container {
+            padding: 16px;
+            height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px; /* Reduced margin for more space */
+        }
+        .toggle-group {
+            display: flex;
+            gap: 16px;
+        }
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem; /* Reduced font size */
+            color: #00ff00; /* Neon green for active state */
+        }
+        .toggle-switch {
+            margin-left: 8px;
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background-color: #333;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .toggle-switch input {
+            display: none;
+        }
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            transform: translateX(20px);
+            background-color: #00ff00; /* Neon green */
+        }
+        .btn-pause {
+            padding: 6px 12px; /* Reduced padding for compact size */
+            border: none;
+            border-radius: 4px;
+            background-color: #ffb800;
+            color: #000;
+            font-size: 0.9rem; /* Reduced font size */
+            cursor: pointer;
+        }
+        #tokenList {
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 8px;
+            background-color: #000;
+        }
+        .card {
+            display: flex;
+            flex-direction: column;
+            background-color: #222;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 8px; /* Reduced padding */
+            margin-bottom: 8px; /* Reduced margin */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            height: auto; /* Auto height to accommodate content */
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px; /* Reduced margin */
+        }
+        .card-header p {
+            margin: 2px 0;
+            font-size: 0.8rem; /* Smaller font size */
+        }
+        .card-header strong {
+            font-size: 0.9rem; /* Reduced size */
+        }
+        .card-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-body img {
+            width: 32px; /* Reduced size */
+            height: 32px; /* Reduced size */
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+        .card-body span {
+            font-size: 0.8rem; /* Smaller font size */
+        }
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem; /* Smaller font size */
+            color: #999;
+        }
+        .btn-view, .btn-buy {
+            padding: 4px 8px; /* Reduced padding for buttons */
+            border-radius: 4px;
+            font-size: 0.7rem; /* Smaller font size */
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-view {
+            background-color: #ff4d4d;
+            color: #fff;
+        }
+        .btn-buy {
+            background-color: #00ff00;
+            color: #000;
+        }
+        .tag {
+            font-size: 0.7rem;
+            color: #999;
+            margin-top: 4px;
+        }
+        .blur-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .blur-overlay button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            color: #000;
+            background-color: #00ff00;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            background-color: #111; /* Dark background */
+            color: #fff; /* Light text color */
+            border: 2px solid #00ff00; /* Green border */
+        }
+
+        .modal-header, .modal-footer {
+            background-color: #111; /* Dark background */
+            border-color: #00ff00; /* Green border */
+        }
+
+        .modal-header .close {
+            color: #00ff00; /* Green close button */
+        }
+
+        .modal-header .close:hover {
+            color: #ffcc00; /* Hover color for close button */
+        }
+
+        .modal-title {
+            color: #00ff00; /* Green title color */
+        }
+
+        .modal-body p {
+            color: #fff; /* Light text color */
+        }
+
+        .modal-footer .btn-secondary {
+            background-color: #333; /* Dark button background */
+            color: #00ff00; /* Green text color */
+            border-color: #00ff00; /* Green border */
+        }
+
+        .modal-footer .btn-secondary:hover {
+            background-color: #00ff00; /* Green background on hover */
+            color: #000; /* Dark text color on hover */
+        }
+
+        /* Loading, Success, and Error Messages Overlay */
+        .message-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .message-content {
+            background-color: #111;
+            padding: 20px;
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 300px;
+        }
+
+        .message-content.success {
+            border-color: #00cc00;
+        }
+
+        .message-content.error {
+            border-color: #ff0000;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 255, 0, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ff00;
+            animation: spin 1s ease-in-out infinite;
+            -webkit-animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { -webkit-transform: rotate(360deg); }
+        }
+        @-webkit-keyframes spin {
+            to { -webkit-transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
+        <a class="navbar-brand" href="/">NOVI</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/raydium.html">Raydium</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pump.html">Pump</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/upgrade.html">Upgrade</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/trades.html">Trades</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/snipe.html">Snipe</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/config.html">Config</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-5 pt-5">
+        <!-- Header Controls -->
+        <div class="controls">
+            <div class="toggle-group">
+                <label class="toggle-label">
+                    Pump
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="togglePump" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+                <label class="toggle-label">
+                    DexScreener
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="toggleDex" checked>
+                        <span class="toggle-slider"></span>
+                    </div>
+                </label>
+            </div>
+            <button class="btn-pause">Pause</button>
+        </div>
+
+        <!-- Scrollable Token List -->
+        <ul id="tokenList" class="mt-3"></ul>
+    </div>
+
+    <!-- Blur Overlay -->
+    <div id="blurOverlay" class="blur-overlay" style="display: none;">
+        <div>
+            <p style="color: white; margin-bottom: 20px;">You need to subscribe to access this content.</p>
+            <button id="subscribeButton">Subscribe Now</button>
+        </div>
+    </div>
+
+    <!-- Modal for Detailed View -->
+    <div class="modal fade" id="tokenModal" tabindex="-1" role="dialog" aria-labelledby="tokenModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tokenModalLabel">Token Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Name:</strong> <span id="modalName"></span></p>
+                    <p><strong>User:</strong> <span id="modalUserName"></span></p>
+                    <p><strong>Username:</strong> <span id="modalScreenName"></span></p>
+                    <p><strong>Tweet:</strong> <span id="modalFullText"></span></p>
+                    <p><strong>Followers:</strong> <span id="modalFollowersCount"></span></p>
+                    <p><strong>Contract:</strong> <span id="modalContract"></span></p>
+                    <p><strong>View on:</strong> <a id="modalViewLink" href="#" target="_blank">DexScreener</a></p>
+                    <p><strong>Tweet Link:</strong> <a id="modalTweetLink" href="#" target="_blank">View Tweet</a></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Expired Popup -->
+    <div id="subscriptionExpiredPopup" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" id="closeSubscriptionExpiredPopup">&times;</span>
+            <h3>Subscription Expired</h3>
+            <p>Your subscription has expired. Please subscribe to continue using the Buy function.</p>
+            <button class="btn btn-primary" onclick="window.location.href='/upgrade.html'">Subscribe</button>
+        </div>
+    </div>
+
+    <!-- Loading, Success, and Error Messages Overlay -->
+    <div id="loadingOverlay" class="message-overlay" style="display: none;">
+        <div class="message-content">
+            <div class="loading-spinner"></div>
+            <span>Processing...</span>
+        </div>
+    </div>
+
+    <div id="successOverlay" class="message-overlay" style="display: none;">
+        <div class="message-content success">
+            <span>Transaction Successful!</span>
+        </div>
+    </div>
+
+    <div id="errorOverlay" class="message-overlay" style="display: none;">
+        <div class="message-content error">
+            <span id="errorMessageText"></span>
+        </div>
+    </div>
+
+    <script>
+        const tokenListElement = document.getElementById('tokenList');
+        let isPaused = false;
+        let isSubscriptionActive = false;
+
+        const renderTokens = (filteredTokens) => {
+            tokenListElement.innerHTML = ''; // Clear the current list
+            filteredTokens.forEach(token => {
+                const name = token.coinData?.name || token.baseToken?.name || "Unknown Token";
+                const marketCap = formatMarketCap(token.coinData?.usd_market_cap || token.usd_market_cap || 0);
+                const timeSinceCreated = formatTimeDifference(token.tweet_created_at);
+                const url = token.urls?.[0]?.expanded_url || "#";
+                const tag = token.novi_query_type === "pump" ? "pump.fun" : "dexscreener";
+
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <p><strong>Token:</strong> ${name}</p>
+                                <p><strong>Market Cap:</strong> ${marketCap}</p>
+                                <p><strong>Created:</strong> ${timeSinceCreated}</p>
+                                <p class="tag">${tag}</p>
+                            </div>
+                            <div>
+                                <button class="btn-view" data-token='${JSON.stringify(token)}'>View</button>
+                                <button class="btn-buy">Buy</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                tokenListElement.appendChild(li);
+            });
+
+            // Add event listeners to the "View" buttons
+            document.querySelectorAll('.btn-view').forEach(button => {
+                button.addEventListener('click', () => {
+                    const token = JSON.parse(button.getAttribute('data-token'));
+                    showTokenDetails(token);
+                });
+            });
+        };
+
+        const formatMarketCap = (marketCap) => {
+            if (marketCap >= 1e12) return `${(marketCap / 1e12).toFixed(2)}T`;
+            if (marketCap >= 1e9) return `${(marketCap / 1e9).toFixed(2)}B`;
+            if (marketCap >= 1e6) return `${(marketCap / 1e6).toFixed(2)}M`;
+            if (marketCap >= 1e3) return `${(marketCap / 1e3).toFixed(2)}K`;
+            return `$${marketCap}`;
+        };
+
+        const formatTimeDifference = (timestamp) => {
+            const timeDifference = Math.floor((new Date() - new Date(timestamp)) / 1000);
+            if (timeDifference < 60) return `${timeDifference} seconds ago`;
+            if (timeDifference < 3600) return `${Math.floor(timeDifference / 60)} minute ago`;
+            if (timeDifference < 86400) return `${Math.floor(timeDifference / 3600)} hour ago`;
+            if (timeDifference < 604800) return `${Math.floor(timeDifference / 86400)} day ago`;
+            if (timeDifference < 2419200) return `${Math.floor(timeDifference / 604800)} week ago`;
+            if (timeDifference < 29030400) return `${Math.floor(timeDifference / 2419200)} month ago`;
+            return `${Math.floor(timeDifference / 29030400)} years ago`;
+        };
+
+        const updateTweets = (tweets) => {
+            // Check if tweets is an array
+            if (!Array.isArray(tweets)) {
+                console.error('Received tweets is not an array:', tweets);
+                return; // Exit the function if tweets is not an array
+            }
+
+            const pumpEnabled = document.getElementById("togglePump").checked;
+            const dexEnabled = document.getElementById("toggleDex").checked;
+
+            let filteredTokens = tweets.filter(token => {
+                const matchesType =
+                    (pumpEnabled && token.novi_query_type === "pump") ||
+                    (dexEnabled && token.novi_query_type === "dexscreener");
+                return matchesType;
+            });
+
+            // Sort tokens by tweet_created_at
+            filteredTokens.sort((a, b) => new Date(b.tweet_created_at) - new Date(a.tweet_created_at));
+
+            renderTokens(filteredTokens);
+        };
+
+        const fetchSubscriptionStatus = async () => {
+            const telegramId = getCookieValue('telegramId');
+            if (!telegramId) {
+                alert('Telegram ID not found in cookies.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/v1/subscriptions/getSubsciptions/${telegramId}`);
+                if (!response.ok) {
+                    isSubscriptionActive = false;
+                    return;
+                }
+                const data = await response.json();
+                if (data.success) {
+                    isSubscriptionActive = true;
+                } else {
+                    isSubscriptionActive = false;
+                }
+            } catch (error) {
+                console.error('Error fetching subscription status:', error);
+                alert('Failed to fetch subscription status. Please try again.');
+            }
+        };
+
+        const getCookieValue = (name) => {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        };
+
+        const showTokenDetails = (token) => {
+            const modalName = document.getElementById('modalName');
+            const modalUserName = document.getElementById('modalUserName');
+            const modalScreenName = document.getElementById('modalScreenName');
+            const modalFullText = document.getElementById('modalFullText');
+            const modalFollowersCount = document.getElementById('modalFollowersCount');
+            const modalContract = document.getElementById('modalContract');
+            const modalViewLink = document.getElementById('modalViewLink');
+            const modalTweetLink = document.getElementById('modalTweetLink');
+
+            modalName.textContent = token.coinData?.name || token.baseToken?.name || "Unknown Token";
+            modalUserName.textContent = token.user.name;
+            modalScreenName.textContent = token.user.screen_name;
+            modalFullText.textContent = token.full_text;
+            modalFollowersCount.textContent = token.user.followers_count;
+
+            if (token.novi_query_type === "pump") {
+                modalContract.textContent = token.coinData?.mint || "N/A";
+                modalViewLink.href = token.urls?.[0]?.expanded_url || "#";
+                modalViewLink.textContent = "Pump";
+            } else if (token.novi_query_type === "dexscreener") {
+                modalContract.textContent = token.baseToken?.mintAddress || "N/A";
+                modalViewLink.href = token.urls?.[0]?.expanded_url || "#";
+                modalViewLink.textContent = "DexScreener";
+            }
+
+            modalTweetLink.href = `https://x.com/${token.user.screen_name}/status/${token._id}`;
+
+            $('#tokenModal').modal('show');
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchSubscriptionStatus();
+
+            if (!isSubscriptionActive) {
+                document.getElementById('blurOverlay').style.display = 'flex';
+                return;
+            }
+
+            const socket = new WebSocket('ws://localhost:5000/x-scraper');
+
+            socket.onopen = () => {
+                console.log('WebSocket connection established.');
+            };
+
+            socket.onmessage = (event) => {
+                let tweets;
+                try {
+                    tweets = JSON.parse(event.data);
+                } catch (error) {
+                    console.error('Failed to parse WebSocket message:', error);
+                    return;
+                }
+
+                if (!Array.isArray(tweets)) {
+                    console.error('Received tweets is not an array:', tweets);
+                    return;
+                }
+
+                if (!isPaused) {
+                    updateTweets(tweets);
+                }
+            };
+
+            socket.onclose = () => {
+                console.log('WebSocket connection closed.');
+            };
+
+            socket.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
+
+            const pauseButton = document.querySelector('.btn-pause');
+            pauseButton.addEventListener('click', () => {
+                isPaused = !isPaused;
+                pauseButton.textContent = isPaused ? "Resume" : "Pause";
+            });
+
+            // Update when toggles change
+            document.getElementById("togglePump").addEventListener('change', () => {
+                socket.send(JSON.stringify({ type: 'togglePump' }));
+            });
+            document.getElementById("toggleDex").addEventListener('change', () => {
+                socket.send(JSON.stringify({ type: 'toggleDex' }));
+            });
+        });
+
+        document.getElementById('subscribeButton').addEventListener('click', () => {
+            // Redirect to subscription page or show subscription modal
+            alert('Redirecting to subscription page...');
+        });
+    </script>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -204,7 +204,7 @@
             button.innerHTML = `<span class="loading-spinner"></span> Processing...`;
 
             try {
-                const response = await fetch('https://project25backend.onrender.com/api/v1/pay/solanaPayment', {
+                const response = await fetch('http://localhost:5000/api/v1/pay/solanaPayment', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

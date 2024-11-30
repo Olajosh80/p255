@@ -1,37 +1,25 @@
-const axios = require('axios');
+async function fetchDexScreenerData(pairAddress) {
+  const apiUrl = `https://api.dexscreener.com/latest/dex/pairs/${pairAddress}`;
 
-async function fetchPumpTokenData(token) {
-  const apiUrl = `https://gmgn.ai/defi/quotation/v1/tokens/sol/${token}`;
-  
   try {
-    const response = await axios.get(apiUrl, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+      const response = await fetch(apiUrl);
+      
+      if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-    const data = response.data;
-
-    if (data.code !== 0 || data.msg !== "success") {
-      console.error('API returned an error:', data.msg);
-      return null;
-    }
-
-    return data.data.token;
+      const data = await response.json();
+      return data;
   } catch (error) {
-    console.error('Error fetching token data:', error);
-    return null;
+      console.error('Error fetching data from DexScreener API:', error);
+      return null;
   }
 }
 
-// Usage example
-(async () => {
-  const token = 'CtpEhz9Ls7e1ansRPdNy3SFFTM9eKNnNtDuCUvK3pump'; // Replace with the desired token address
-  const tokenData = await fetchPumpTokenData(token);
-
-  if (tokenData) {
-    console.log('Fetched Token Data:', tokenData);
-  } else {
-    console.log('Failed to fetch token data.');
+// Example usage:
+const pairAddress = 'EaWM2rWyqKucBNcvX3pPcJYvXZSDwukvFnAKYdCsvszm'; // Replace with your pair address
+fetchDexScreenerData(pairAddress).then(data => {
+  if (data) {
+      console.log('Fetched data:', data);
   }
-})();
+});

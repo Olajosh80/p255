@@ -159,7 +159,7 @@
                 return;
             }
 
-            fetch(`https://project25backend.onrender.com/api/v1/users/updateRaydiumConfig/${telegramId}`, {
+            fetch(`http://localhost:5000/api/v1/users/updateRaydiumConfig/${telegramId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -217,7 +217,7 @@
 
                 console.log('Fetching config for Telegram ID:', telegramId);
 
-                fetch(`https://project25backend.onrender.com/api/v1/users/getRaydiumConfig/${telegramId}`)
+                fetch(`http://localhost:5000/api/v1/users/getRaydiumConfig/${telegramId}`)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Network response was not ok ' + response.statusText);
