@@ -138,9 +138,9 @@
             color: #999;
         }
         .btn-view, .btn-buy {
-            padding: 4px 8px; /* Reduced padding for buttons */
+            padding: 8px 16px; /* Increased padding for bigger button */
             border-radius: 4px;
-            font-size: 0.7rem; /* Smaller font size */
+            font-size: 0.9rem; /* Slightly larger font size */
             font-weight: bold;
             cursor: pointer;
             border: none;
@@ -300,9 +300,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/pump.html">Pump</a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link" href="/upgrade.html">Upgrade</a>
-                </li>
+                </li> -->
                 <li class="nav-item">
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
@@ -365,7 +365,7 @@
                     <p><strong>Name:</strong> <span id="modalName"></span></p>
                     <p><strong>Market Cap:</strong> <span id="modalMarketCap"></span></p>
                     <p><strong>Created:</strong> <span id="modalCreated"></span></p>
-                    <p><strong>Fetched:</strong> <span id="modalFetched"></span></p>
+                    <p><strong>Indexed on Novi:</strong> <span id="modalFetched"></span></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -405,6 +405,47 @@
     </div>
 
     <script>
+        const getCookieValue = (name) => {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        };
+
+        const handleBuyToken = async (token) => {
+            const telegramId = getCookieValue('telegramId');
+            const outputMint = token.mint;
+            const inputMint = 'So11111111111111111111111111111111111111112';
+
+            showLoading();
+
+            try {
+                const response = await fetch('http://localhost:5000/api/v1/trade/pump-buy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        inputMint,
+                        outputMint,
+                        telegramId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess();
+                } else {
+                    showError(data.message || 'Transaction failed');
+                }
+            } catch (error) {
+                console.error('Error submitting buy transaction:', error);
+                showError('An error occurred. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        };
+
         const tokenListElement = document.getElementById('tokenList');
         let isPaused = false;
         let isSubscriptionActive = false;
@@ -414,7 +455,8 @@
         const renderTokens = (filteredTokens) => {
             tokenListElement.innerHTML = ''; // Clear the current list
             filteredTokens.forEach(token => {
-                const name = token.name || "Unknown Token";
+                const name = token.name || " Token";
+                const mint = token.mint ? `${token.mint.slice(0, 4)}...${token.mint.slice(-4)}` : "Mint";
                 const marketCap = formatMarketCap(token.usd_market_cap || 0);
                 const created = formatTimeDifference(token.created_timestamp);
                 const fetched = formatTimeDifference(token.createdAt);
@@ -425,13 +467,13 @@
                         <div class="card-header">
                             <div>
                                 <p><strong>Token:</strong> ${name}</p>
+                                <p><strong>Mint:</strong> ${mint}</p>
                                 <p><strong>Market Cap:</strong> ${marketCap}</p>
                                 <p><strong>Created:</strong> ${created}</p>
-                                <p><strong>Fetched:</strong> ${fetched}</p>
+                                <p><strong>Indexed:</strong> ${fetched}</p>
                             </div>
                             <div>
-                                <button class="btn-view" data-token='${JSON.stringify(token)}'>View</button>
-                                <button class="btn-buy">Buy</button>
+                                <button class="btn-buy" data-token='${JSON.stringify(token).replace(/'/g, '&apos;')}'>Buy</button>
                             </div>
                         </div>
                     </div>
@@ -439,11 +481,11 @@
                 tokenListElement.appendChild(li);
             });
 
-            // Add event listeners to the "View" buttons
-            document.querySelectorAll('.btn-view').forEach(button => {
+            // Add event listeners to the "Buy" buttons
+            document.querySelectorAll('.btn-buy').forEach(button => {
                 button.addEventListener('click', () => {
-                    const token = JSON.parse(button.getAttribute('data-token'));
-                    showTokenDetails(token);
+                    const token = JSON.parse(button.getAttribute('data-token').replace(/&apos;/g, '\''));
+                    handleBuyToken(token);
                 });
             });
         };
@@ -513,12 +555,6 @@
             }
         };
 
-        const getCookieValue = (name) => {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
-        };
-
         const showTokenDetails = (token) => {
             const modalName = document.getElementById('modalName');
             const modalMarketCap = document.getElementById('modalMarketCap');
@@ -531,6 +567,29 @@
             modalFetched.textContent = formatTimeDifference(new Date());
 
             $('#tokenModal').modal('show');
+        };
+
+        const showLoading = () => {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        };
+
+        const hideLoading = () => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        };
+
+        const showSuccess = () => {
+            document.getElementById('successOverlay').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('successOverlay').style.display = 'none';
+            }, 3000);
+        };
+
+        const showError = (message) => {
+            document.getElementById('errorMessageText').textContent = message;
+            document.getElementById('errorOverlay').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('errorOverlay').style.display = 'none';
+            }, 3000);
         };
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -588,12 +647,12 @@
             // Update market cap filters
             document.getElementById("minMarketCap").addEventListener('input', () => {
                 minMarketCap = parseFloat(document.getElementById("minMarketCap").value) || 0;
-                updateTweets(Array.from(tokenListElement.children).map(li => JSON.parse(li.querySelector('.btn-view').getAttribute('data-token'))));
+                updateTweets(Array.from(tokenListElement.children).map(li => JSON.parse(li.querySelector('.btn-buy').getAttribute('data-token').replace(/&apos;/g, '\''))));
             });
 
             document.getElementById("maxMarketCap").addEventListener('input', () => {
                 maxMarketCap = parseFloat(document.getElementById("maxMarketCap").value) || Infinity;
-                updateTweets(Array.from(tokenListElement.children).map(li => JSON.parse(li.querySelector('.btn-view').getAttribute('data-token'))));
+                updateTweets(Array.from(tokenListElement.children).map(li => JSON.parse(li.querySelector('.btn-buy').getAttribute('data-token').replace(/&apos;/g, '\''))));
             });
         });
 

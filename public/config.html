@@ -48,9 +48,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/pump.html">Pump</a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link" href="/upgrade.html">Upgrade</a>
-                </li>
+                </li> -->
                 <li class="nav-item">
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
@@ -103,6 +103,15 @@
     </div>
     
     <script>
+        const getCookieValue = (name) => {
+            if (typeof document === 'undefined') {
+                return null;
+            }
+            const cookies = document.cookie.split(';');
+            const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
+            return cookie ? cookie.split('=')[1] : null;
+        };
+
         document.getElementById('stopLoss').addEventListener('input', function() {
             const stopLossValue = parseFloat(this.value);
             const errorMessage = document.getElementById('stopLossError');
@@ -117,6 +126,8 @@
         });
 
         document.getElementById('configForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form from refreshing the page
+
             const stopLossInput = document.getElementById('stopLoss');
             const stopLossValue = parseFloat(stopLossInput.value);
             const errorMessage = document.getElementById('stopLossError');
@@ -124,8 +135,7 @@
             if (stopLossValue >= 0) {
                 errorMessage.style.display = 'block';
                 stopLossInput.focus(); // Focus back on the invalid field
-                event.preventDefault(); // Prevent form submission
-                return;
+                return; // Stop further execution if Stop Loss is invalid
             } else {
                 errorMessage.style.display = 'none';
             }
@@ -167,31 +177,63 @@
                 body: JSON.stringify(config)
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok ' + response.statusText);
+                // Log the response for debugging
+                console.log('Response status:', response.status);
+                
+                // Check if the response status is 200
+                if (response.status === 200) {
+                    return response.json(); // Parse the JSON response
+                } else {
+                    throw new Error('Failed to update config');
                 }
-                return response.json();
             })
             .then(data => {
+                // Log the parsed data to check the result
+                // console.log('Config update response:', data);
                 alert('Config updated successfully!');
-                fetchConfig(); // Refresh the form with the updated config
+
+             
             })
             .catch(error => {
-                console.error('Error updating config:', error);
-                alert('Failed to update config. Please try again.');
+                // console.error('Error updating config:', error);
+                // alert('Failed to update config. Please try again.');
             });
         });
 
+        // Function to fetch configuration data
+        function fetchConfig() {
+            const telegramId = getCookieValue('telegramId');
+            if (!telegramId) {
+                alert('Telegram ID not found in cookies.');
+                return;
+            }
+
+            console.log('Fetching config for Telegram ID:', telegramId);
+
+            fetch(`http://localhost:5000/api/v1/users/getRaydiumConfig/${telegramId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Config data fetched:', data);
+                    document.getElementById('takeProfit').value = data.takeProfit;
+                    document.getElementById('stopLoss').value = data.stopLoss;
+                    document.getElementById('minPoolSize').value = data.minPoolSize;
+                    document.getElementById('maxPoolSize').value = data.maxPoolSize;
+                    document.getElementById('tipMiner').value = data.tipMiner;
+                    document.getElementById('amount').value = data.amount;
+                    document.getElementById('slippage').value = data.slippage;
+                })
+                .catch(error => {
+                    console.error('Error fetching config:', error);
+                    alert('Failed to fetch config. Please try again.');
+                });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            const getCookieValue = (name) => {
-                if (typeof document === 'undefined') {
-                    return null;
-                }
-                const cookies = document.cookie.split(';');
-                const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
-                return cookie ? cookie.split('=')[1] : null;
-            };
-            
             const checkAuth = () => {
                 const token = getCookieValue('token');
                 const telegramId = getCookieValue('telegramId');
@@ -205,39 +247,6 @@
             
             if (!checkAuth()) {
                 return;
-            }
-
-            // Function to fetch configuration data
-            function fetchConfig() {
-                const telegramId = getCookieValue('telegramId');
-                if (!telegramId) {
-                    alert('Telegram ID not found in cookies.');
-                    return;
-                }
-
-                console.log('Fetching config for Telegram ID:', telegramId);
-
-                fetch(`http://localhost:5000/api/v1/users/getRaydiumConfig/${telegramId}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok ' + response.statusText);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Config data fetched:', data);
-                        document.getElementById('takeProfit').value = data.takeProfit;
-                        document.getElementById('stopLoss').value = data.stopLoss;
-                        document.getElementById('minPoolSize').value = data.minPoolSize;
-                        document.getElementById('maxPoolSize').value = data.maxPoolSize;
-                        document.getElementById('tipMiner').value = data.tipMiner;
-                        document.getElementById('amount').value = data.amount;
-                        document.getElementById('slippage').value = data.slippage;
-                    })
-                    .catch(error => {
-                        console.error('Error fetching config:', error);
-                        alert('Failed to fetch config. Please try again.');
-                    });
             }
 
             // Fetch config data on page load

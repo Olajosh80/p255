@@ -209,9 +209,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/pump.html">Pump</a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link" href="/upgrade.html">Upgrade</a>
-                </li>
+                </li> -->
                 <li class="nav-item">
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
@@ -240,15 +240,9 @@
         <ul class="token-list" id="tokenList">
             <!-- Tokens will be dynamically added here -->
         </ul>
-    </div>
-
-    <!-- Subscription Expired Popup -->
-    <div id="subscriptionExpiredPopup" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close" id="closeSubscriptionExpiredPopup">&times;</span>
-            <h3>Subscription Expired</h3>
-            <p>Your subscription has expired. Please subscribe to continue using the Buy function.</p>
-            <button class="btn btn-primary" onclick="window.location.href='/upgrade.html'">Subscribe</button>
+        <div class="pagination-controls mt-4">
+            <button id="prevPage" class="btn btn-primary mr-2" disabled>Previous</button>
+            <button id="nextPage" class="btn btn-primary">Next</button>
         </div>
     </div>
 
@@ -305,18 +299,17 @@
 
             const tokenListElement = document.getElementById('tokenList');
             const loadingState = document.getElementById('loadingState');
+            const prevPageButton = document.getElementById('prevPage');
+            const nextPageButton = document.getElementById('nextPage');
 
             const loadingOverlay = document.getElementById('loadingOverlay');
             const successOverlay = document.getElementById('successOverlay');
             const errorOverlay = document.getElementById('errorOverlay');
             const errorMessageText = document.getElementById('errorMessageText');
 
-            const subscriptionExpiredPopup = document.getElementById('subscriptionExpiredPopup');
-            const closeSubscriptionExpiredPopup = document.getElementById('closeSubscriptionExpiredPopup');
-
-            let isFirstLoad = true; // Flag to check if it's the first page load
-            let isSubscriptionActive = false; // Flag to check if the subscription is active
             let existingTokens = []; // Array to store existing tokens
+            let currentPage = 1; // Current page number
+            const tokensPerPage = 100; // Number of tokens per page
 
             const formatTimeDifference = (timestamp) => {
                 const timeDifference = Math.floor((new Date() - new Date(timestamp)) / 1000);
@@ -328,39 +321,6 @@
                 if (timeDifference < 29030400) return `${Math.floor(timeDifference / 2419200)} months ago`;
                 return `${Math.floor(timeDifference / 29030400)} years ago`;
             };
-
-            const fetchSubscriptionStatus = async () => {
-                const telegramId = getCookieValue('telegramId');
-                if (!telegramId) {
-                    alert('Telegram ID not found in cookies.');
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`http://localhost:5000/api/v1/subscriptions/getSubsciptions/${telegramId}`);
-                    if (!response.ok) {
-                        isSubscriptionActive = false;
-                        return;
-                    }
-                    const data = await response.json();
-                    if (data.success) {
-                        isSubscriptionActive = true;
-                    } else {
-                        isSubscriptionActive = false;
-                    }
-                } catch (error) {
-                    console.error('Error fetching subscription status:', error);
-                    alert('Failed to fetch subscription status. Please try again.');
-                }
-            };
-
-            const showSubscriptionExpiredPopup = () => {
-                subscriptionExpiredPopup.style.display = 'flex';
-            };
-
-            closeSubscriptionExpiredPopup.addEventListener('click', () => {
-                subscriptionExpiredPopup.style.display = 'none';
-            });
 
             const renderTokens = (tokens) => {
                 // Store the current scroll position
@@ -375,84 +335,67 @@
                 // Clear the current list
                 tokenListElement.innerHTML = '';
 
-                const batchSize = 50;
-                let index = 0;
+                const startIndex = (currentPage - 1) * tokensPerPage;
+                const endIndex = startIndex + tokensPerPage;
+                const tokensToDisplay = existingTokens.slice(startIndex, endIndex);
 
-                const renderBatch = () => {
-                    const end = Math.min(index + batchSize, existingTokens.length);
-                    for (let i = index; i < end; i++) {
-                        const token = existingTokens[i];
-                        const li = document.createElement('li');
-                        li.innerHTML = `
-                            <div>Name: ${token.data.name}</div>
-                            <div>Base Address: ${token.data.baseInfo.baseAddress}</div>
-                            <div>Status: Tradable</div>
-                            <div>Timestamp: ${formatTimeDifference(token.timestamp)}</div>
-                            <div>Tokens Pooled: ${token.data.baseInfo.baseLpAmount}</div>
-                            <div>SOL Pooled: ${token.data.quoteInfo.quoteLpAmount}</div>
-                        `;
+                tokensToDisplay.forEach((token, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div>Name: ${token.data.name}</div>
+                        <div>Base Address: ${token.data.baseInfo.baseAddress}</div>
+                        <div>Status: Tradable</div>
+                        <div>Timestamp: ${formatTimeDifference(token.timestamp)}</div>
+                        <div>Tokens Pooled: ${token.data.baseInfo.baseLpAmount}</div>
+                        <div>SOL Pooled: ${token.data.quoteInfo.quoteLpAmount}</div>
+                    `;
 
-                        // Add the 'new-token' class to the most recent token
-                        if (i === 0) {
-                            li.classList.add('new-token');
-                        }
-
-                        // Add Buy button or Subscribe button based on subscription status
-                        const button = document.createElement('button');
-                        if (isSubscriptionActive) {
-                            button.className = 'mt-2 btn btn-buy';
-                            button.textContent = 'Buy';
-                            button.setAttribute('data-token', JSON.stringify(token));
-                            button.addEventListener('click', () => {
-                                const token = JSON.parse(button.getAttribute('data-token'));
-                                handleBuyToken(token);
-                            });
-                        } else {
-                            button.className = 'mt-2 btn btn-primary';
-                            button.textContent = 'Subscribe to Access';
-                            button.addEventListener('click', () => {
-                                window.location.href = '/upgrade.html';
-                            });
-                        }
-                        li.appendChild(button);
-
-                        tokenListElement.appendChild(li); // Append each token to the list
+                    // Add the 'new-token' class to the most recent token
+                    if (index === 0 && currentPage === 1) {
+                        li.classList.add('new-token');
                     }
 
-                    index = end;
-                    if (index < existingTokens.length) {
-                        requestAnimationFrame(renderBatch);
-                    } else {
-                        // Restore the scroll position after rendering new data
-                        tokenListElement.scrollTop = currentScrollPosition;
-                    }
-                };
+                    // Add Buy button
+                    const button = document.createElement('button');
+                    button.className = 'mt-2 btn btn-buy';
+                    button.textContent = 'Buy';
+                    button.setAttribute('data-token', JSON.stringify(token));
+                    button.addEventListener('click', () => {
+                        const token = JSON.parse(button.getAttribute('data-token'));
+                        handleBuyToken(token);
+                    });
+                    li.appendChild(button);
 
-                requestAnimationFrame(renderBatch);
+                    tokenListElement.appendChild(li); // Append each token to the list
+                });
+
+                // Update pagination controls
+                prevPageButton.disabled = currentPage === 1;
+                nextPageButton.disabled = endIndex >= existingTokens.length;
+
+                // Restore the scroll position after rendering new data
+                tokenListElement.scrollTop = currentScrollPosition;
             };
 
-            // Fetch subscription status initially
-            fetchSubscriptionStatus().then(() => {
-                // Establish WebSocket connection
-                const socket = new WebSocket('ws://localhost:5000/raydium');
+            // Establish WebSocket connection
+            const socket = new WebSocket('ws://localhost:5000/raydium');
 
-                socket.onopen = () => {
-                    console.log('WebSocket connection established.');
-                };
+            socket.onopen = () => {
+                console.log('WebSocket connection established.');
+            };
 
-                socket.onmessage = (event) => {
-                    const tokens = JSON.parse(event.data);
-                    renderTokens(tokens);
-                };
+            socket.onmessage = (event) => {
+                const tokens = JSON.parse(event.data);
+                renderTokens(tokens);
+            };
 
-                socket.onclose = () => {
-                    console.log('WebSocket connection closed.');
-                };
+            socket.onclose = () => {
+                console.log('WebSocket connection closed.');
+            };
 
-                socket.onerror = (error) => {
-                    console.error('WebSocket error:', error);
-                };
-            });
+            socket.onerror = (error) => {
+                console.error('WebSocket error:', error);
+            };
 
             const showLoading = () => {
                 loadingOverlay.style.display = 'flex';
@@ -511,6 +454,21 @@
                     hideLoading();
                 }
             };
+
+            prevPageButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTokens([]);
+                }
+            });
+
+            nextPageButton.addEventListener('click', () => {
+                const totalPages = Math.ceil(existingTokens.length / tokensPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTokens([]);
+                }
+            });
         });
     </script>
 </body>
