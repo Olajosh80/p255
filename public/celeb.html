@@ -487,7 +487,7 @@
             }
 
             try {
-                const response = await fetch(`http://localhost:5000/api/v1/subscriptions/getSubsciptions/${telegramId}`);
+                const response = await fetch(`https://project25backend.onrender.com/api/v1/subscriptions/getSubsciptions/${telegramId}`);
                 if (!response.ok) {
                     isSubscriptionActive = false;
                     return;

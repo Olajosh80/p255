@@ -92,6 +92,9 @@
             width: 80%;
             max-width: 400px;
             border-radius: 10px;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
         }
         .close {
             color: #aaa;
@@ -176,9 +179,6 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/pump.html">Pump</a>
                 </li>
-                <!-- <li class="nav-item">
-                    <a class="nav-link" href="/upgrade.html">Upgrade</a>
-                </li> -->
                 <li class="nav-item">
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
@@ -300,21 +300,16 @@
             <div id="tradeDetailsContent">
                 <!-- Trade details will be dynamically added here -->
             </div>
-
-            <!-- <div class="form-group">
-                <label for="updateStatusSelect">
-                    <span style="color: red; font-size: 0.9em; margin-right: 10px;">Use only in case of status is sold and the token is unsold, change status to completed. Note THIS IS RARE!</span>
-                    Update Status
-                </label>
-                <select id="updateStatusSelect" class="form-control">
-                    <option value="Pending">Pending</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Failed">Failed</option>
-                    <option value="Sold">Sold</option>
-                </select>
+            <div class="form-group">
+                <label for="takeProfit">Take Profit</label>
+                <input type="number" id="takeProfit" class="form-control" placeholder="Take Profit">
             </div>
-            <button id="confirmUpdateStatus" class="btn btn-success">Update Status</button> -->
-            
+            <div class="form-group">
+                <label for="stopLoss">Stop Loss</label>
+                <input type="number" class="form-control" id="stopLoss" name="stopLoss" required>
+                <div id="stopLossError" class="text-danger" style="display: none;">Stop Loss must be a negative number.</div>
+            </div>
+            <button id="confirmUpdateTrade" class="btn btn-success">Update Trade</button>
         </div>
     </div>
 
@@ -343,6 +338,20 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   
     <script>
+
+        
+document.getElementById('stopLoss').addEventListener('input', function() {
+            const stopLossValue = parseFloat(this.value);
+            const errorMessage = document.getElementById('stopLossError');
+
+            if (stopLossValue >= 0) {
+                errorMessage.style.display = 'block';
+                this.setCustomValidity('Stop Loss must be a negative number.');
+            } else {
+                errorMessage.style.display = 'none';
+                this.setCustomValidity('');
+            }
+        });
    document.addEventListener('DOMContentLoaded', () => {
           
           const getCookieValue = (name) => {
@@ -371,7 +380,7 @@
                  }
 
         // Vanilla JavaScript Implementation
-        const BASE_URL = 'http://localhost:5000/api/v1';
+        const BASE_URL = 'https://project25backend.onrender.com/api/v1';
 
         // State variables
         let trades = [];
@@ -755,19 +764,42 @@
     });
 };
 
-        const renderTradeDetails = () => {
-            const tradeDetailsContent = document.getElementById('tradeDetailsContent');
-            tradeDetailsContent.innerHTML = `
-                <p><strong>Trade ID:</strong> ${formatTradeId(selectedTrade.tradeId)}</p>
-                <p><strong>Platform:</strong> ${selectedTrade.platform}</p>
-                <p><strong>Active:</strong> ${selectedTrade.isSnipeActive ? 'Yes' : 'No'}</p>
-                <p><strong>Tokens Bought:</strong> ${selectedTrade.tokenBought}</p>
-                <p><strong>Buy Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.buyTx}" target="_blank">View Tx</a></p>
-                <p><strong>Sell Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.sellTx}" target="_blank">View Tx</a></p>
-                <p><strong>Status:</strong> ${selectedTrade.status}</p>
-                <p><strong>Blockchain:</strong> ${selectedTrade.blockchain}</p>
-            `;
-        };
+const renderTradeDetails = () => {
+    const tradeDetailsContent = document.getElementById('tradeDetailsContent');
+
+    // Debugging: log the platform value to verify
+    console.log('Selected Trade Platform:', selectedTrade.platform);
+
+    // Determine the correct URL and link text based on the platform
+    let pumpLikeUrl = '';
+    let pumpLikeText = '';
+    
+    if (selectedTrade.platform.toLowerCase() === 'pump') {
+        pumpLikeUrl = `https://pump.fun/coin/${selectedTrade.contractAddress}`;
+        pumpLikeText = 'Pump Url';
+    } else if (selectedTrade.platform.toLowerCase() === 'raydium') {
+        pumpLikeUrl = `https://dexscreener.com/solana/${selectedTrade.contractAddress}`;
+        pumpLikeText = 'Raydium Url';
+    }
+
+    tradeDetailsContent.innerHTML = `
+        <p><strong>Trade ID:</strong> ${formatTradeId(selectedTrade.tradeId)}</p>
+        <p><strong>Platform:</strong> ${selectedTrade.platform}</p>
+        <p><strong>Active:</strong> ${selectedTrade.isSnipeActive ? 'Yes' : 'No'}</p>
+        <p><strong>Tokens Bought:</strong> ${selectedTrade.tokenBought}</p>
+        <p><strong>Buy Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.buyTx}" target="_blank">View Tx</a></p>
+        <p><strong>Sell Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.sellTx}" target="_blank">View Tx</a></p>
+        <p><strong>Status:</strong> ${selectedTrade.status}</p>
+        <p><strong>Blockchain:</strong> ${selectedTrade.blockchain}</p>
+        <p><strong>View on Platform:</strong> 
+            <a href="${pumpLikeUrl}" target="_blank">${pumpLikeText}</a>
+        </p>
+    `;
+
+    // Populate the input fields with the current values
+    document.getElementById('takeProfit').value = selectedTrade.takeProfit;
+    document.getElementById('stopLoss').value = selectedTrade.stopLoss;
+};
 
         const fetchTrades = async () => {
             try {
@@ -902,6 +934,45 @@
 
         document.getElementById('confirmUpdateStatus').addEventListener('click', async () => {
             await handleUpdateStatusTransaction();
+        });
+
+        // Event listener for updating trade details
+        document.getElementById('confirmUpdateTrade').addEventListener('click', async () => {
+            const takeProfit = document.getElementById('takeProfit').value;
+            const stopLoss = document.getElementById('stopLoss').value;
+
+            if (!selectedTrade) {
+                showError('No trade selected for update.');
+                return;
+            }
+
+            const config = {
+                takeProfit: parseFloat(takeProfit),
+                stopLoss: parseFloat(stopLoss)
+            };
+
+            try {
+                const response = await fetch(`${BASE_URL}/users/update-trade-by-ids/${selectedTrade.tradeId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                if (response.status === 200) {
+                    const data = await response.json();
+                    showSuccess();
+                    fetchTrades(); // Refresh trades after update
+                } else {
+                    throw new Error('Failed to update trade');
+                }
+            } catch (error) {
+                console.error('Error updating trade:', error);
+                showError('Failed to update trade. Please try again.');
+            } finally {
+                hideModal('viewTradeModal');
+            }
         });
 
         // Fetch trades on page load

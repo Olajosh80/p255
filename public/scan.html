@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Scanner</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            background-color: #1a1a1a;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+        .form-control {
+            margin-bottom: 10px;
+            background-color: #333;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+        .btn-primary {
+            background-color: #00ff00;
+            border-color: #00ff00;
+            color: #000;
+        }
+        .btn-primary:hover {
+            background-color: #00cc00;
+            border-color: #00cc00;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 255, 0, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ff00;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #222;
+            padding: 15px;
+            border: 1px solid #00ff00;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 8px;
+            color: #fff;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close {
+            color: #aaa;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #00ff00;
+        }
+        .modal-body {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .btn-primary {
+            background-color: #00ff00;
+            border-color: #00ff00;
+            color: #000;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background-color: #00cc00;
+            border-color: #00cc00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h5 class="text-center mb-4">Scan Token</h5>
+        <form id="tokenForm">
+            <div class="form-group">
+                <label for="mintAddress">Mint Address:</label>
+                <input type="text" id="mintAddress" class="form-control" placeholder="Enter mint address">
+            </div>
+            <div class="form-group">
+                <label for="platformSelect">Select Platform:</label>
+                <select id="platformSelect" class="form-control">
+                    <option value="raydium">Raydium</option>
+                    <option value="pump">Pump</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Scan</button>
+            <div id="loadingState" style="display: none; margin-top: 10px;">
+                <div class="loading-spinner"></div>
+                <span>Scanning...</span>
+            </div>
+        </form>
+    </div>
+
+    <!-- Token Details Modal -->
+    <div id="tokenDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Token Details</h5>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body" id="tokenDetailsContent"></div>
+            <div class="modal-footer">
+                <button id="buyButton" class="btn btn-primary">Buy</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tokenForm = document.getElementById('tokenForm');
+            const mintAddressInput = document.getElementById('mintAddress');
+            const platformSelect = document.getElementById('platformSelect');
+            const loadingState = document.getElementById('loadingState');
+            const tokenDetailsModal = document.getElementById('tokenDetailsModal');
+            const closeModal = document.getElementById('closeModal');
+            const tokenDetailsContent = document.getElementById('tokenDetailsContent');
+
+            // Handle form submission
+            tokenForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const mintAddress = mintAddressInput.value.trim();
+                const platform = platformSelect.value;
+
+                if (!mintAddress) {
+                    alert('Please enter a valid mint address.');
+                    return;
+                }
+
+                showLoading();
+                await fetchTokenData(mintAddress, platform);
+                hideLoading();
+            });
+
+            // Close the modal
+            closeModal.addEventListener('click', () => {
+                tokenDetailsModal.style.display = 'none';
+            });
+
+            // Fetch token data based on mint address and selected platform
+            async function fetchTokenData(mintAddress, platform) {
+                const url = 'https://project25backend.onrender.com/api/v1/scanner/token-data';
+                const body = { mint: mintAddress, source: platform };
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body),
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.message || 'Failed to fetch token data.');
+                    }
+
+                    const data = await response.json();
+                    if (data && data.data) {
+                        populateTokenDetails(data.data, platform);
+                    } else {
+                        alert('No data found for the provided mint address.');
+                    }
+                } catch (error) {
+                    console.error('Error fetching token data:', error);
+                    alert('Error fetching token data. Please try again.');
+                }
+            }
+
+            // Populate modal with token details (Raydium or Pump platform data structure)
+            function populateTokenDetails(data, platform) {
+                let details = `
+                
+                    <p><strong>Name:</strong> ${data.name}</p>
+                    <p><strong>Symbol:</strong> ${data.symbol}</p>
+                    <p><strong>Description:</strong> ${data.description}</p>
+                    <p><strong>Market Cap (USD):</strong> $${data.usd_market_cap.toLocaleString()}</p>
+                    <p><strong>Total Supply:</strong> ${data.total_supply}</p>
+                    <p><strong>Website:</strong> <a href="${data.website}" target="_blank">${data.website}</a></p>
+                    <p><strong>Twitter:</strong> <a href="${data.twitter}" target="_blank">${data.twitter}</a></p>
+                    <p><strong>Telegram:</strong> <a href="${data.telegram}" target="_blank">${data.telegram}</a></p>
+                `;
+
+                if (platform === 'raydium') {
+                    details += `
+                        <p><strong>Pair Address:</strong> ${data.pairAddress}</p>
+                        <p><strong>Base Token Name:</strong> ${data.baseToken.name}</p>
+                        <p><strong>Base Token Symbol:</strong> ${data.baseToken.symbol}</p>
+                        <p><strong>Market Cap:</strong> $${data.marketCap.toLocaleString()}</p>
+                        <p><strong>Pair Created At:</strong> ${new Date(data.pairCreatedAt).toLocaleString()}</p>
+                    `;
+                }
+
+                tokenDetailsContent.innerHTML = details;
+                tokenDetailsModal.style.display = 'flex';
+            }
+
+            // Show loading spinner
+            function showLoading() {
+                loadingState.style.display = 'flex';
+            }
+
+            // Hide loading spinner
+            function hideLoading() {
+                loadingState.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

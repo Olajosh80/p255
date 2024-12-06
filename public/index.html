@@ -103,13 +103,14 @@
             <span>Validating token...</span>
         </div>
         <div id="message" class="mt-3"></div>
+        <div id="solBalance" class="mt-3"></div>
     </div>
 
     <script>
         const getCookieValue = (name) => {
             const cookies = document.cookie.split(';');
             const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
-            return cookie ? cookie .split('=')[1] : null;
+            return cookie ? cookie.split('=')[1] : null;
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -128,7 +129,7 @@
                 const messageDiv = document.getElementById('message');
 
                 if (!tokenFromUrl) {
-                    messageDiv.innerText = 'No token provided.        ';
+                    messageDiv.innerText = 'No token provided.';
                     messageDiv.style.color = 'red';
                     messageDiv.style.marginBottom = '20px'; // Add margin to the message div
 
@@ -157,57 +158,77 @@
         }
 
         async function validateToken(env, token) {
-    try {
-        // Show loading state
-        document.getElementById('loadingState').style.display = 'block';
-        const messageDiv = document.getElementById('message');
+            try {
+                // Show loading state
+                document.getElementById('loadingState').style.display = 'block';
+                const messageDiv = document.getElementById('message');
 
-        const response = await fetch(`${env.API_BASE_URL}/users/validate-login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ token }),
-        });
+                const response = await fetch(`${env.API_BASE_URL}/users/validate-login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token }),
+                });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to validate token.');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to validate token.');
+                }
+
+                const validationData = await response.json();
+                console.log(validationData);
+
+                if (validationData.telegramId) {
+                    // Set the expiration date to 1 year from now
+                    const expirationDate = new Date();
+                    expirationDate.setTime(expirationDate.getTime() + (365 * 24 * 60 * 60 * 1000)); // 1 year
+
+                    // Set cookies with the 1-year expiration date
+                    document.cookie = `token=true; expires=${expirationDate.toUTCString()}; path=/;`;
+                    document.cookie = `nonce=${validationData.nonce}; expires=${expirationDate.toUTCString()}; path=/;`;
+                    document.cookie = `telegramId=${validationData.telegramId}; expires=${expirationDate.toUTCString()}; path=/;`;
+
+                    messageDiv.innerText = 'Token is valid. Redirecting to the dashboard...';
+                    messageDiv.style.color = 'green';
+
+                    setTimeout(() => {
+                        window.location.href = '/dashboard.html'; // Redirect to the dashboard after 2 seconds
+                    }, 1000); // Redirect after 2 seconds
+                } else {
+                    messageDiv.innerText = 'Invalid token.';
+                    messageDiv.style.color = 'red';
+                }
+            } catch (error) {
+                const errorMessage = error.message || 'Error validating token.';
+                document.getElementById('message').innerText = errorMessage;
+                document.getElementById('message').style.color = 'red';
+            } finally {
+                // Hide loading state
+                document.getElementById('loadingState').style.display = 'none';
+            }
         }
 
-        const validationData = await response.json();
-        console.log(validationData);
+        async function fetchSolBalance() {
+            const telegramId = getCookieValue('telegramId');
+            if (!telegramId) return;
 
-        if (validationData.telegramId) {
-            // Set the expiration date to 1 year from now
-            const expirationDate = new Date();
-            expirationDate.setTime(expirationDate.getTime() + (365 * 24 * 60 * 60 * 1000)); // 1 year
+            try {
+                const response = await fetch(`${env.API_BASE_URL}/users/balance?telegramId=${telegramId}`);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to fetch balance.');
+                }
 
-            // Set cookies with the 1-year expiration date
-            document.cookie = `token=true; expires=${expirationDate.toUTCString()}; path=/;`;
-            document.cookie = `nonce=${validationData.nonce}; expires=${expirationDate.toUTCString()}; path=/;`;
-            document.cookie = `telegramId=${validationData.telegramId}; expires=${expirationDate.toUTCString()}; path=/;`;
-
-            messageDiv.innerText = 'Token is valid. Redirecting to the dashboard...';
-            messageDiv.style.color = 'green';
-
-            setTimeout(() => {
-                window.location.href = '/dashboard.html'; // Redirect to the dashboard after 2 seconds
-            }, 1000); // Redirect after 2 seconds
-        } else {
-            messageDiv.innerText = 'Invalid token.';
-            messageDiv.style.color = 'red';
+                const balanceData = await response.json();
+                document.getElementById('solBalance').innerText = `Solana Balance: ${balanceData.balance} SOL`;
+            } catch (error) {
+                console.error('Error fetching Solana balance:', error);
+            }
         }
-    } catch (error) {
-        const errorMessage = error.message || 'Error validating token.';
-        document.getElementById('message').innerText = errorMessage;
-        document.getElementById('message').style.color = 'red';
-    } finally {
-        // Hide loading state
-        document.getElementById('loadingState').style.display = 'none';
-    }
-}
 
+        // Fetch Solana balance every 5 seconds
+        // setInterval(fetchSolBalance, 5000);
     </script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
