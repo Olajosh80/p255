@@ -182,9 +182,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link" href="/snipe.html">Snipe</a>
-                </li>
+                </li> -->
                 <li class="nav-item">
                     <a class="nav-link" href="/config.html">Config</a>
                 </li>
@@ -292,26 +292,33 @@
         </div>
     </div>
 
-    <!-- View Trade Details Modal -->
+
     <div id="viewTradeModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close" id="closeViewTradeModal">&times;</span>
-            <h3>Trade Details</h3>
-            <div id="tradeDetailsContent">
+        <div class="modal-content" style="padding: 0.9rem; font-size: 0.9rem;">
+            <span class="close" id="closeViewTradeModal" style="font-size: 0.9rem;">&times;</span>
+            <h3 style="font-size: 0.9rem; margin-bottom: 0.9rem;">Trade Details</h3>
+            <div id="tradeDetailsContent" style="font-size: 0.9rem;">
                 <!-- Trade details will be dynamically added here -->
             </div>
-            <div class="form-group">
-                <label for="takeProfit">Take Profit</label>
-                <input type="number" id="takeProfit" class="form-control" placeholder="Take Profit">
+            <div class="form-group" style="margin-bottom: 0.9rem;">
+                <label for="isSnipeActive" style="font-size: 0.9rem;">Disable Take Profit and Stop Loss</label>
+                <input type="checkbox" id="isSnipeActive" class="form-control" style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem;">
             </div>
-            <div class="form-group">
-                <label for="stopLoss">Stop Loss</label>
-                <input type="number" class="form-control" id="stopLoss" name="stopLoss" required>
-                <div id="stopLossError" class="text-danger" style="display: none;">Stop Loss must be a negative number.</div>
+            <div id="takeProfitStopLossFields">
+                <div class="form-group" style="margin-bottom: 0.9rem;">
+                    <label for="takeProfit" style="font-size: 0.9rem;">Take Profit</label>
+                    <input type="number" id="takeProfit" class="form-control" placeholder="Take Profit" style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0.9rem;">
+                    <label for="stopLoss" style="font-size: 0.9rem;">Stop Loss</label>
+                    <input type="number" class="form-control" id="stopLoss" name="stopLoss" required style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem;">
+                    <div id="stopLossError" class="text-danger" style="display: none; font-size: 0.7rem;">Stop Loss must be a negative number.</div>
+                </div>
+                <button id="confirmUpdateTrade" class="btn btn-success" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Update Trade</button>
             </div>
-            <button id="confirmUpdateTrade" class="btn btn-success">Update Trade</button>
         </div>
     </div>
+
 
     <!-- Loading, Success, and Error Messages Overlay -->
     <div id="loadingOverlay" class="message-overlay" style="display: none;">
@@ -446,49 +453,66 @@ document.getElementById('stopLoss').addEventListener('input', function() {
         };
 
         const handleRetryClick = async (trade) => {
-            const telegramId = getCookieValue('telegramId');
-            const outputMint = trade.contractAddress;
-            const inputMint = 'So11111111111111111111111111111111111111112';
+    const telegramId = getCookieValue('telegramId');
+    const outputMint = trade.contractAddress;
+    const inputMint = 'So11111111111111111111111111111111111111112';
 
-            showLoading();
+    showLoading();
 
-            try {
-                const response = await fetch(`${BASE_URL}/trade/buy-token`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        inputMint,
-                        outputMint,
-                        telegramId,
-                    })
-                });
+    try {
+        let response;
+        if (trade.platform.toLowerCase() === 'pump') {
+            response = await fetch(`${BASE_URL}/trade/pump-sell`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    inputMint,
+                    outputMint,
+                    telegramId,
+                })
+            });
+        } else if (trade.platform.toLowerCase() === 'raydium') {
+            response = await fetch(`${BASE_URL}/trade/buy-token`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    inputMint,
+                    outputMint,
+                    telegramId,
+                })
+            });
+        } else {
+            throw new Error('Unsupported platform for retry transaction');
+        }
 
-                const contentType = response.headers.get("content-type");
-                let data;
+        const contentType = response.headers.get("content-type");
+        let data;
 
-                if (contentType && contentType.includes("application/json")) {
-                    data = await response.json();
-                } else {
-                    const text = await response.text();
-                    console.error('Expected JSON but received:', text);
-                    showError('Unexpected response from server.');
-                    return;
-                }
+        if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            const text = await response.text();
+            console.error('Expected JSON but received:', text);
+            showError('Unexpected response from server.');
+            return;
+        }
 
-                if (response.ok) {
-                    showSuccess();
-                } else {
-                    showError(data.message || 'Transaction failed');
-                }
-            } catch (error) {
-                console.error('Error submitting retry transaction:', error);
-                showError('An error occurred. Please try again.');
-            } finally {
-                hideLoading();
-            }
-        };
+        if (response.ok) {
+            showSuccess();
+        } else {
+            showError(data.message || 'Transaction failed');
+        }
+    } catch (error) {
+        console.error('Error submitting retry transaction:', error);
+        showError('An error occurred. Please try again.');
+    } finally {
+        hideLoading();
+    }
+};
 
         const handleSellClick = (trade) => {
             sellTrade = trade;
@@ -766,6 +790,8 @@ document.getElementById('stopLoss').addEventListener('input', function() {
 
 const renderTradeDetails = () => {
     const tradeDetailsContent = document.getElementById('tradeDetailsContent');
+    const isSnipeActiveCheckbox = document.getElementById('isSnipeActive');
+    const takeProfitStopLossFields = document.getElementById('takeProfitStopLossFields');
 
     // Debugging: log the platform value to verify
     console.log('Selected Trade Platform:', selectedTrade.platform);
@@ -796,12 +822,41 @@ const renderTradeDetails = () => {
         </p>
     `;
 
+    // Set the checkbox state based on isSnipeActive
+    isSnipeActiveCheckbox.checked = !selectedTrade.isSnipeActive;
+
     // Populate the input fields with the current values
     document.getElementById('takeProfit').value = selectedTrade.takeProfit;
     document.getElementById('stopLoss').value = selectedTrade.stopLoss;
+
+    // Add event listener to the checkbox
+    isSnipeActiveCheckbox.addEventListener('change', async () => {
+        const isSnipeActive = !isSnipeActiveCheckbox.checked;
+        takeProfitStopLossFields.style.display = isSnipeActive ? 'block' : 'none';
+
+        try {
+            const response = await fetch(`${BASE_URL}/users/update-trade-by-ids/${selectedTrade.tradeId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ isSnipeActive })
+            });
+
+            if (response.status === 200) {
+                showSuccess();
+                fetchTrades(); // Refresh trades after update
+            } else {
+                throw new Error('Failed to update trade');
+            }
+        } catch (error) {
+            console.error('Error updating trade:', error);
+            showError('Failed to update trade. Please try again.');
+        }
+    });
 };
 
-        const fetchTrades = async () => {
+const fetchTrades = async () => {
             try {
                 const telegramId = getCookieValue('telegramId');
                 const response = await fetch(`${BASE_URL}/fetchTrades/${telegramId}`);
