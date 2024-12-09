@@ -185,6 +185,9 @@
                 <!-- <li class="nav-item">
                     <a class="nav-link" href="/snipe.html">Snipe</a>
                 </li> -->
+                <li class="nav-item active">
+                    <a class="nav-link" href="/ref.html">Referrals</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/config.html">Config</a>
                 </li>
@@ -299,9 +302,13 @@
             <div id="tradeDetailsContent" style="font-size: 0.9rem;">
                 <!-- Trade details will be dynamically added here -->
             </div>
-            <div class="form-group" style="margin-bottom: 0.9rem;">
-                <label for="isSnipeActive" style="font-size: 0.9rem;">Disable Take Profit and Stop Loss</label>
-                <input type="checkbox" id="isSnipeActive" class="form-control" style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem;">
+            <div class="form-group d-flex align-items-center" style="margin-bottom: 0.9rem;">
+                <label for="disableTakeProfit" style="font-size: 0.9rem; margin-right: 0.5rem;">Disable Take Profit</label>
+                <input type="checkbox" id="disableTakeProfit" class="form-control" style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem; width: 1.2rem;">
+            </div>
+            <div class="form-group d-flex align-items-center" style="margin-bottom: 0.9rem;">
+                <label for="disableStopLoss" style="font-size: 0.9rem; margin-right: 0.5rem;">Disable Stop Loss</label>
+                <input type="checkbox" id="disableStopLoss" class="form-control" style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem; width: 1.2rem;">
             </div>
             <div id="takeProfitStopLossFields">
                 <div class="form-group" style="margin-bottom: 0.9rem;">
@@ -786,51 +793,76 @@ document.getElementById('stopLoss').addEventListener('input', function() {
     });
 };
 
-const renderTradeDetails = () => {
-    const tradeDetailsContent = document.getElementById('tradeDetailsContent');
-    const isSnipeActiveCheckbox = document.getElementById('isSnipeActive');
-    const takeProfitStopLossFields = document.getElementById('takeProfitStopLossFields');
 
-    // Debugging: log the platform value to verify
-    console.log('Selected Trade Platform:', selectedTrade.platform);
+const disableTakeProfitCheckbox = document.getElementById('disableTakeProfit');
+    const disableStopLossCheckbox = document.getElementById('disableStopLoss');
+    const takeProfitInput = document.getElementById('takeProfit');
+    const stopLossInput = document.getElementById('stopLoss');
 
-    // Determine the correct URL and link text based on the platform
-    let pumpLikeUrl = '';
-    let pumpLikeText = '';
-    
-    if (selectedTrade.platform.toLowerCase() === 'pump') {
-        pumpLikeUrl = `https://pump.fun/coin/${selectedTrade.contractAddress}`;
-        pumpLikeText = 'Pump Url';
-    } else if (selectedTrade.platform.toLowerCase() === 'raydium') {
-        pumpLikeUrl = `https://dexscreener.com/solana/${selectedTrade.contractAddress}`;
-        pumpLikeText = 'Raydium Url';
-    }
+    const renderTradeDetails = () => {
+        const tradeDetailsContent = document.getElementById('tradeDetailsContent');
+        const takeProfitStopLossFields = document.getElementById('takeProfitStopLossFields');
 
-    tradeDetailsContent.innerHTML = `
-        <p><strong>Trade ID:</strong> ${formatTradeId(selectedTrade.tradeId)}</p>
-        <p><strong>Platform:</strong> ${selectedTrade.platform}</p>
-        <p><strong>Active:</strong> ${selectedTrade.isSnipeActive ? 'Yes' : 'No'}</p>
-        <p><strong>Tokens Bought:</strong> ${selectedTrade.tokenBought}</p>
-        <p><strong>Buy Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.buyTx}" target="_blank">View Tx</a></p>
-        <p><strong>Sell Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.sellTx}" target="_blank">View Tx</a></p>
-        <p><strong>Status:</strong> ${selectedTrade.status}</p>
-        <p><strong>Blockchain:</strong> ${selectedTrade.blockchain}</p>
-        <p><strong>View on Platform:</strong> 
-            <a href="${pumpLikeUrl}" target="_blank">${pumpLikeText}</a>
-        </p>
-    `;
+        // Debugging: log the platform value to verify
+        console.log('Selected Trade Platform:', selectedTrade.platform);
 
-    // Set the checkbox state based on isSnipeActive
-    isSnipeActiveCheckbox.checked = !selectedTrade.isSnipeActive;
+        // Determine the correct URL and link text based on the platform
+        let pumpLikeUrl = '';
+        let pumpLikeText = '';
+        
+        if (selectedTrade.platform.toLowerCase() === 'pump') {
+            pumpLikeUrl = `https://pump.fun/coin/${selectedTrade.contractAddress}`;
+            pumpLikeText = 'Pump Url';
+        } else if (selectedTrade.platform.toLowerCase() === 'raydium') {
+            pumpLikeUrl = `https://dexscreener.com/solana/${selectedTrade.contractAddress}`;
+            pumpLikeText = 'Raydium Url';
+        }
 
-    // Populate the input fields with the current values
-    document.getElementById('takeProfit').value = selectedTrade.takeProfit;
-    document.getElementById('stopLoss').value = selectedTrade.stopLoss;
+        tradeDetailsContent.innerHTML = `
+            <p><strong>Trade ID:</strong> ${formatTradeId(selectedTrade.tradeId)}</p>
+            <p><strong>Platform:</strong> ${selectedTrade.platform}</p>
+            <p><strong>Active:</strong> ${selectedTrade.isSnipeActive ? 'Yes' : 'No'}</p>
+            <p><strong>Tokens Bought:</strong> ${selectedTrade.tokenBought}</p>
+            <p><strong>Buy Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.buyTx}" target="_blank">View Tx</a></p>
+            <p><strong>Sell Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.sellTx}" target="_blank">View Tx</a></p>
+            <p><strong>Status:</strong> ${selectedTrade.status}</p>
+            <p><strong>Blockchain:</strong> ${selectedTrade.blockchain}</p>
+            <p><strong>View on Platform:</strong> 
+                <a href="${pumpLikeUrl}" target="_blank">${pumpLikeText}</a>
+            </p>
+        `;
 
-    // Add event listener to the checkbox
-    isSnipeActiveCheckbox.addEventListener('change', async () => {
-        const isSnipeActive = !isSnipeActiveCheckbox.checked;
-        takeProfitStopLossFields.style.display = isSnipeActive ? 'block' : 'none';
+        // Set the checkbox state based on isSnipeActive
+        disableTakeProfitCheckbox.checked = !selectedTrade.isTakeProfitActive;
+        disableStopLossCheckbox.checked = !selectedTrade.isStopLossActive;
+
+        // Populate the input fields with the current values
+        takeProfitInput.value = selectedTrade.takeProfit;
+        stopLossInput.value = selectedTrade.stopLoss;
+
+        // Add event listeners to the checkboxes
+        disableTakeProfitCheckbox.addEventListener('change', async () => {
+            const isTakeProfitActive = !disableTakeProfitCheckbox.checked;
+            await updateTrade({ isTakeProfitActive });
+            takeProfitInput.style.display = disableTakeProfitCheckbox.checked ? 'none' : 'block';
+        });
+
+        disableStopLossCheckbox.addEventListener('change', async () => {
+            const isStopLossActive = !disableStopLossCheckbox.checked;
+            await updateTrade({ isStopLossActive });
+            stopLossInput.style.display = disableStopLossCheckbox.checked ? 'none' : 'block';
+        });
+
+        // Initially hide the input fields if the checkboxes are checked
+        takeProfitInput.style.display = disableTakeProfitCheckbox.checked ? 'none' : 'block';
+        stopLossInput.style.display = disableStopLossCheckbox.checked ? 'none' : 'block';
+    };
+
+    const updateTrade = async (config) => {
+        if (!selectedTrade) {
+            showError('No trade selected for update.');
+            return;
+        }
 
         try {
             const response = await fetch(`${BASE_URL}/users/update-trade-by-ids/${selectedTrade.tradeId}`, {
@@ -838,10 +870,11 @@ const renderTradeDetails = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ isSnipeActive })
+                body: JSON.stringify(config)
             });
 
             if (response.status === 200) {
+                const data = await response.json();
                 showSuccess();
                 fetchTrades(); // Refresh trades after update
             } else {
@@ -851,8 +884,47 @@ const renderTradeDetails = () => {
             console.error('Error updating trade:', error);
             showError('Failed to update trade. Please try again.');
         }
+    };
+
+    // Event listener for updating trade details
+    document.getElementById('confirmUpdateTrade').addEventListener('click', async () => {
+        const takeProfit = takeProfitInput.value;
+        const stopLoss = stopLossInput.value;
+
+        if (!selectedTrade) {
+            showError('No trade selected for update.');
+            return;
+        }
+
+        const config = {
+            takeProfit: parseFloat(takeProfit),
+            stopLoss: parseFloat(stopLoss)
+        };
+
+        try {
+            const response = await fetch(`${BASE_URL}/users/update-trade-by-ids/${selectedTrade.tradeId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(config)
+            });
+
+            if (response.status === 200) {
+                const data = await response.json();
+                showSuccess();
+                fetchTrades(); // Refresh trades after update
+            } else {
+                throw new Error('Failed to update trade');
+            }
+        } catch (error) {
+            console.error('Error updating trade:', error);
+            showError('Failed to update trade. Please try again.');
+        } finally {
+            hideModal('viewTradeModal');
+        }
     });
-};
+
 
 const fetchTrades = async () => {
             try {

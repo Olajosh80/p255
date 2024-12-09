@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Referrals</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .referrals-container {
+            max-width: 400px;
+            padding: 20px;
+            background-color: #111;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            animation: flicker 2s infinite;
+            text-align: center;
+        }
+        @keyframes flicker {
+            0% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
+            100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+        }
+        .btn-primary {
+            background-color: #00ff00;
+            border-color: #00ff00;
+            color: #000;
+        }
+        .btn-primary:hover {
+            background-color: #00cc00;
+            border-color: #00cc00;
+        }
+        .referral-info {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+        }
+        .referral-info p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
+        <a class="navbar-brand" href="/">NOVI</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/raydium.html">Raydium</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pump.html">Pump</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/trades.html">Trades</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/ref.html">Referrals</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/config.html">Config</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="referrals-container">
+        <div class="referral-info">
+            <p><strong>Referral Rewards:</strong> <span id="referralRewards"></span></p>
+            <p><strong>Pending Payout:</strong> <span id="pendingPayout"></span></p>
+            <p><strong>Total Payout:</strong> <span id="totalPayout"></span></p>
+            <p><strong>Referral Link:</strong> <a id="referralLink" href="#" target="_blank">Click here to get your referral link</a></p>
+            <button id="copyReferralLinkBtn" class="btn btn-primary mt-2">Copy Referral Link</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="authcontext.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const checkAuth = () => {
+                const token = getCookieValue('token');
+                const telegramId = getCookieValue('telegramId');
+
+                if (!token || token === 'false' || !telegramId) {
+                    window.location.href = '/';
+                    return false;
+                }
+                return true;
+            };
+
+            const getCookieValue = (name) => {
+                const cookies = document.cookie.split(';');
+                const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
+                return cookie ? cookie.split('=')[1] : null;
+            };
+
+            if (!checkAuth()) {
+                return;
+            }
+
+            const referralRewardsElement = document.getElementById('referralRewards');
+            const pendingPayoutElement = document.getElementById('pendingPayout');
+            const totalPayoutElement = document.getElementById('totalPayout');
+
+            const initializeReferrals = async () => {
+                try {
+                    const telegramId = getCookieValue('telegramId');
+                    if (telegramId) {
+                        const response = await fetch('https://project25backend.onrender.com/api/v1/users/initialize', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ telegramId: telegramId }),
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch user details');
+                        }
+
+                        const data = await response.json();
+                        const { referralRewards, pendingPayout, totalPayout } = data;
+
+                        referralRewardsElement.innerText = `$${referralRewards}`;
+                        pendingPayoutElement.innerText = `$${pendingPayout}`;
+                        totalPayoutElement.innerText = `$${totalPayout}`;
+
+                        // Set referral link
+                        const referralLinkElement = document.getElementById('referralLink');
+                        const referralLink = `https://t.me/Novipool_bot?start=referral_${telegramId}`;
+                        referralLinkElement.href = referralLink;
+                        referralLinkElement.innerText = referralLink;
+                    } else {
+                        throw new Error('Unauthorized');
+                    }
+                } catch (error) {
+                    console.error('Error fetching user details:', error);
+                }
+            };
+
+            const copyReferralLinkBtn = document.getElementById('copyReferralLinkBtn');
+
+            copyReferralLinkBtn.addEventListener('click', () => {
+                const referralLinkElement = document.getElementById('referralLink');
+                const referralLink = referralLinkElement.href;
+
+                navigator.clipboard.writeText(referralLink).then(() => {
+                    alert('Referral link copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    alert('Failed to copy referral link. Please try again.');
+                });
+            });
+
+            initializeReferrals();
+        });
+    </script>
+</body>
+</html>
