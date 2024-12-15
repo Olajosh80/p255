@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Raydium Pools</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #000;
-            color: #00ff00;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Poppins', sans-serif;
+            background-color: #4b4b5b; /* Outer background color */
+            color: #fff; /* White text for better contrast */
             overflow-y: auto;
             margin-top: 100px; /* To ensure navbar does not overlap content */
             display: flex;
@@ -17,40 +18,41 @@
             align-items: center;
             height: calc(100vh - 60px); /* Adjust height to account for navbar */
         }
+
         .tv-screen {
             width: 100%;
             max-width: 1200px;
             padding: 20px;
-            background-color: #111;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-            animation: flicker 2s infinite;
+            background-color: #343a40; /* Dark background for the container */
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(65, 45, 108, 0.1);
             text-align: center;
             margin-top: 40px; /* Space between the navbar and the content */
         }
-        @keyframes flicker {
-            0% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
-            100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
-        }
+
         .token-list {
             list-style-type: none;
             padding: 0;
             max-height: 600px;
             overflow-y: auto;
         }
+
         .token-list li {
             margin: 10px 0;
             padding: 10px;
-            border: 1px solid #00ff00;
+            border: 1px solid #fff; /* White border for cards */
             border-radius: 5px;
             text-align: left;
             width: 100%;
             box-sizing: border-box;
+            background-color: #343a40; /* Dark background for individual cards */
+            color: #fff; /* White text for better readability */
         }
+
         .new-token {
             animation: fireUp 1s infinite;
         }
+
         @keyframes fireUp {
             0% {
                 box-shadow: 0 0 20px rgba(255, 0, 0, 0.7), 0 0 40px rgba(255, 0, 0, 0.5);
@@ -65,23 +67,28 @@
                 transform: translateY(0);
             }
         }
+
         .btn-primary {
-            background-color: #00ff00;
-            border-color: #00ff00;
-            color: #000;
+            background-color: #BC9E5C; /* Primary button color */
+            border-color: #BC9E5C;
+            color: #ffffff; /* White text for buttons */
+            font-weight: 600;
         }
+
         .btn-primary:hover {
-            background-color: #00cc00;
-            border-color: #00cc00;
+            background-color: #A3854A; /* Slightly darker on hover */
+            border-color: #A3854A;
         }
+
         .btn-buy {
-            background-color: #00ff00;
-            border-color: #00ff00;
-            color: #000;
+            background-color: #BC9E5C;
+            border-color: #BC9E5C;
+            color: #ffffff;
         }
+
         .btn-buy:hover {
-            background-color: #00cc00;
-            border-color: #00cc00;
+            background-color: #A3854A;
+            border-color: #A3854A;
         }
 
         .modal {
@@ -98,68 +105,65 @@
             align-items: center;
             justify-content: center;
         }
+
         .modal-content {
-            background-color: #111;
+            background-color: #ffffff; /* White background for modal */
             padding: 20px;
-            border: 1px solid #00ff00;
+            border: 1px solid #412d6c;
             width: 80%;
             max-width: 400px;
-            border-radius: 10px;
+            border-radius: 12px;
             text-align: center;
             margin: auto;
             max-height: 80vh;
             overflow-y: auto;
-
-            /* Center the modal */
-            position: relative;
-            top: 50%;
-            transform: translateY(-50%);
         }
 
         .close {
-            color: #00ff00;
+            color: #412d6c;
             float: right;
             font-size: 28px;
             font-weight: bold;
         }
+
         .close:hover,
         .close:focus {
-            color: #00cc00;
+            color: #BC9E5C;
             text-decoration: none;
             cursor: pointer;
         }
+
         .loading-spinner {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(0, 255, 0, 0.3);
+            border: 3px solid rgba(65, 45, 108, 0.3);
             border-radius: 50%;
-            border-top-color: #00ff00;
+            border-top-color: #BC9E5C;
             animation: spin 1s ease-in-out infinite;
             -webkit-animation: spin 1s ease-in-out infinite;
-        }
-
-        /* Custom navbar background and text color */
-        .navbar {
-            background-color: #000; /* Set your preferred background color */
-        }
-
-        .navbar .navbar-brand, .navbar .nav-link {
-            color: #00ff00; /* Set your preferred text color */
-        }
-
-        .navbar .navbar-brand:hover, .navbar .nav-link:hover {
-            color: #ffcc00; /* Set the text hover color */
         }
 
         @keyframes spin {
             to { -webkit-transform: rotate(360deg); }
         }
+
         @-webkit-keyframes spin {
             to { -webkit-transform: rotate(360deg); }
         }
 
-        /* Loading, Success, and Error Messages */
+        .navbar {
+            background-color: #412d6c; /* Primary navbar color */
+        }
+
+        .navbar-brand, .nav-link {
+            color: #ffffff !important; /* White text for navbar links */
+        }
+
+        .navbar-brand:hover, .nav-link:hover {
+            color: #BC9E5C !important; /* Hover color for navbar links */
+        }
+
         .message-overlay {
             display: none;
             position: fixed;
@@ -174,10 +178,10 @@
         }
 
         .message-content {
-            background-color: #111;
+            background-color: #ffffff; /* White background for modal */
             padding: 20px;
-            border: 1px solid #00ff00;
-            border-radius: 10px;
+            border: 1px solid #ffffff;
+            border-radius: 12px;
             text-align: center;
             max-width: 300px;
         }
@@ -192,7 +196,8 @@
     </style>
 </head>
 <body>
-   
+
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
         <a class="navbar-brand" href="/">NOVI</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -209,30 +214,24 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/pump.html">Pump</a>
                 </li>
-                <!-- <li class="nav-item">
-                    <a class="nav-link" href="/upgrade.html">Upgrade</a>
-                </li> -->
                 <li class="nav-item">
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
-                <!-- <li class="nav-item">
-                    <a class="nav-link" href="/snipe.html">Snipe</a>
-                </li> -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/celeb.html">Celeb Tokens</a>
+                </li>
                 <li class="nav-item active">
                     <a class="nav-link" href="/ref.html">Referrals</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/config.html">Config</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/solinc.html">Recover Rent</a>
+                </li>
             </ul>
         </div>
     </nav>
-
-
-    <br>
-    <br><br>
-    <br><br>
-    <br><br>
 
     <div class="tv-screen">
         <h2 class="text-center mb-4">Raydium Pools</h2>
@@ -251,31 +250,30 @@
 
     <!-- Loading, Success, and Error Messages Overlay -->
     <div id="loadingOverlay" class="message-overlay" style="display: none;">
-        <div class="message-content">
+        <div class="message-content" style="display: inline-flex; align-items: center; gap: 10px;">
             <div class="loading-spinner"></div>
-            <span>Processing...</span>
+            <span style="color: black;">Processing...</span>
         </div>
     </div>
 
     <div id="successOverlay" class="message-overlay" style="display: none;">
-        <div class="message-content success">
+        <div class="message-content success"  style="color: black;">
             <span>Transaction Successful!</span>
         </div>
     </div>
 
     <div id="errorOverlay" class="message-overlay" style="display: none;">
-        <div class="message-content error">
+        <div class="message-content error" style="color: black;">
             <span id="errorMessageText"></span>
         </div>
     </div>
-    
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-          
             const getCookieValue = (name) => {
                 if (typeof document === 'undefined') {
                     return null;
@@ -288,7 +286,7 @@
             const checkAuth = () => {
                 const token = getCookieValue('token');
                 const telegramId = getCookieValue('telegramId');
-                
+
                 if (!token || token === 'false' || !telegramId) {
                     window.location.href = '/';
                     return false;
@@ -326,7 +324,7 @@
             };
 
             const renderTokens = (tokens) => {
-                // Store the current scroll position
+                // Save the current scroll position
                 const currentScrollPosition = tokenListElement.scrollTop;
 
                 // Sort tokens by timestamp in descending order (latest token first)

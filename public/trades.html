@@ -1,932 +1,453 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trades</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #000;
-            color: #00ff00;
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
-        }
-        .trades-container {
-            width: 90%;
-            max-width: 100%;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #111;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-            animation: flicker 2s infinite;
-        }
-        @keyframes flicker {
-            0% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
-            100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
-        }
-        .table {
-            color: #00ff00;
-        }
-        .table th, .table td {
-            border-color: #00ff00;
-        }
-        .filter-select {
-            background-color: #333;
-            color: #00ff00;
-            border: 1px solid #00ff00;
-        }
-        .scrollable-table {
-            overflow-x: auto;
-            max-height: 60vh; /* Adjust the height as needed */
-            overflow-y: auto;
-        }
-        @media (max-width: 768px) {
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Trades</title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                font-family: 'Poppins', sans-serif;
+                background-color: #4b4b5b; /* Updated background color */
+                color: #fff;
+                overflow: hidden;
+            }
+            .modal-content {
+                width: 90%; /* 90% of the viewport width */
+                max-width: 1200px; /* Maximum width of 1200px */
+                margin: auto; /* Center the modal horizontally */
+            }
             .trades-container {
-                max-height: 80vh;
+                width: 90%;
+                max-width: 100%;
+                margin: 50px auto;
+                padding: 20px;
+                background-color: #343a40;
+                border-radius: 12px;
+                box-shadow: 0 4px 8px rgba(65, 45, 108, 0.1);
+                animation: flicker 2s infinite;
+            }
+            @keyframes flicker {
+                0% { box-shadow: 0 0 10px rgba(65, 45, 108, 0.5); }
+                50% { box-shadow: 0 0 20px rgba(65, 45, 108, 0.8); }
+                100% { box-shadow: 0 0 10px rgba(65, 45, 108, 0.5); }
+            }
+            .table {
+                color: #fff;
+            }
+            .table th, .table td {
+                border-color: #BC9E5C;
+                padding: 10px; /* Adjust padding for better spacing */
+            }
+            .filter-select {
+                background-color: #333;
+                color: #ffffff;
+                border: 1px solid #fff;
+            }
+            .scrollable-table {
+                overflow-x: auto;
+                max-height: 60vh; /* Adjust the height as needed */
                 overflow-y: auto;
             }
-        }
-        .trade-row-positive {
-            background-color: #006400; /* Dark Green */
-        }
-        .trade-row-negative {
-            background-color: #8B0000; /* Dark Red */
-        }
-        .sell-button, .retry-button, .view-button {
-            background-color: #8B0000; /* Dark Red */
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 5px;
-            margin-right: 5px;
-        }
-        .retry-button {
-            background-color: #006400; /* Dark Green */
-        }
-        .view-button {
-            background-color: #333; /* Dark Grey */
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgb(0,0,0);
-            background-color: rgba(0,0,0,0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background-color: #111;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #00ff00;
-            width: 80%;
-            max-width: 400px;
-            border-radius: 10px;
-            position: relative;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .close:hover,
-        .close:focus {
-            color: #00ff00;
-            text-decoration: none;
-            cursor: pointer;
-        }
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(0, 255, 0, 0.3);
-            border-radius: 50%;
-            border-top-color: #00ff00;
-            animation: spin 1s ease-in-out infinite;
-            -webkit-animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin {
-            to { -webkit-transform: rotate(360deg); }
-        }
-        @-webkit-keyframes spin {
-            to { -webkit-transform: rotate(360deg); }
-        }
-        .message-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .message-content {
-            background-color: #111;
-            padding: 20px;
-            border: 1px solid #00ff00;
-            border-radius: 10px;
-            text-align: center;
-            max-width: 300px;
-        }
-        .message-content.success {
-            border-color: #00cc00;
-        }
-        .message-content.error {
-            border-color: #ff0000;
-        }
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-        .blink {
-            animation: blink 1s infinite;
-        }
-    </style>
-</head>
-<body>
+            @media (max-width: 768px) {
+                .trades-container {
+                    max-height: 80vh;
+                    overflow-y: auto;
+                }
+            }
+            .trade-row-positive {
+                background-color: #006400; /* Dark Green */
+            }
+            .trade-row-negative {
+                background-color: #8B0000; /* Dark Red */
+            }
+            .sell-button, .retry-button, .view-button {
+                background-color: #BC9E5C;
+                color: #ffffff;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 5px;
+                margin-right: 5px;
+            }
+            .retry-button {
+                background-color: #006400; /* Dark Green */
+            }
+            .view-button {
+                background-color: #333; /* Dark Grey */
+                margin-top: 10px; /* Add space above the view button */
+            }
+        
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                overflow: auto;
+                background-color: #4B4B5B;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .modal-content {
+                background: #ffffff;
+                padding: 20px;
+                border-radius: 12px;
+                width: 80%;
+                max-width: 500px;
+                position: relative;
+                color: #4B4B5B;
+            }
+            .close {
+                color: #aaa;
+                float: right;
+                font-size: 28px;
+                font-weight: bold;
+            }
+            .close:hover,
+            .close:focus {
+                color: #412d6c;
+                text-decoration: none;
+                cursor: pointer;
+            }
+            .loading-spinner {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                border: 3px solid rgba(65, 45, 108, 0.3);
+                border-radius: 50%;
+                border-top-color: #fff;
+                animation: spin 1s ease-in-out infinite;
+                -webkit-animation: spin 1s ease-in-out infinite;
+            }
+            @keyframes spin {
+                to { -webkit-transform: rotate(360deg); }
+            }
+            @-webkit-keyframes spin {
+                to { -webkit-transform: rotate(360deg); }
+            }
+            .message-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(65, 45, 108, 0.7);
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            }
+            .message-content {
+                background-color: #ffffff;
+                padding: 20px;
+                border: 1px solid #412d6c;
+                border-radius: 12px;
+                text-align: center;
+                max-width: 300px;
+            }
+            .message-content.success {
+                border-color: #00cc00;
+            }
+            .message-content.error {
+                border-color: #ff0000;
+            }
+            @keyframes blink {
+                0% { opacity: 1; }
+                50% { opacity: 0; }
+                100% { opacity: 1; }
+            }
+            .blink {
+                animation: blink 1s infinite;
+            }
+        </style>
+    </head>
+    <body>
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
-        <a class="navbar-brand" href="/">NOVI</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="/">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/raydium.html">Raydium</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/pump.html">Pump</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/trades.html">Trades</a>
-                </li>
-                <!-- <li class="nav-item">
-                    <a class="nav-link" href="/snipe.html">Snipe</a>
-                </li> -->
-                <li class="nav-item active">
-                    <a class="nav-link" href="/ref.html">Referrals</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/config.html">Config</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
+            <a class="navbar-brand" href="/">NOVI</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/raydium.html">Raydium</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/pump.html">Pump</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/trades.html">Trades</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/celeb.html">Celeb Tokens</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="/ref.html">Referrals</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/config.html">Config</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/solinc.html">Recover Rent</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
 
-    <br>
-    <br>
-    <br><br>
-
-    <div class="trades-container">
+        <br>
+        <br>
         <br><br>
-        <h2 class="text-center mb-4">Your Trades</h2>
-        <div class="mb-4 d-flex justify-content-between">
-            <div>
-                <label for="statusFilter" class="mr-2">Filter by Status:</label>
-                <select id="statusFilter" class="filter-select">
-                    <option value="All">All</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Failed">Failed</option>
-                    <option value="Sold">Sold</option>
-                </select>
-            </div>
-            <div>
-                <label for="platformFilter" class="mr-2">Filter by Platform:</label>
-                <select id="platformFilter" class="filter-select">
-                    <option value="All">All</option>
-                    <option value="Pump">Pump</option>
-                    <option value="Raydium">Raydium</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-        </div>
-        <div class="scrollable-table">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>S/N</th>
-                        <th>Trade ID</th>
-                        <th>Mint</th>
-                        <th>Name</th>
-                        <th>S/L</th>
-                        <th>T/P</th>
-                        <th>Amount</th>
-                        <th>PnL</th>
-                        <th>Platform</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="trade-list">
-                    <!-- Trades will be dynamically added here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
 
-    <!-- Sell Transaction Modal -->
-    <div id="sellModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close" id="closeSellModal">&times;</span>
-            <h3>Sell Transaction</h3>
-            <div class="form-group">
-                <label for="sellFromAddress">From Address</label>
-                <input type="text" id="sellFromAddress" class="form-control" placeholder="From Address" readonly>
-            </div>
-            <div class="form-group">
-                <label for="sellToAddress">To Address</label>
-                <input type="text" id="sellToAddress" class="form-control" value="So11111111111111111111111111111111111111112" readonly>
-            </div>
-            <div class="form-group">
-                <label for="sellPercentage">Sell Percentage</label>
-                <select id="sellPercentage" class="form-control">
-                    <option value="100">100%</option>
-                    <option value="75">75%</option>
-                    <option value="50">50%</option>
-                    <option value="25">25%</option>
-                </select>
-            </div>
-            <button id="confirmSell" class="btn btn-success">Confirm</button>
-        </div>
-    </div>
-
-    <!-- Update Trade Status Modal -->
-    <div id="updateStatusModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <span class="close" id="closeUpdateStatusModal">&times;</span>
-            <h3>Update Trade Status</h3>
-            <div class="form-group">
-                <label for="updateStatusContractAddress">Contract Address</label>
-                <input type="text" id="updateStatusContractAddress" class="form-control" placeholder="Contract Address" readonly>
-            </div>
-            <div class="form-group">
-                <label for="updateStatusSelect">New Status</label>
-                <select id="updateStatusSelect" class="form-control">
-                    <option value="Pending">Pending</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Failed">Failed</option>
-                    <option value="Sold">Sold</option>
-                </select>
-            </div>
-            <button id="confirmUpdateStatus" class="btn btn-success">Confirm</button>
-        </div>
-    </div>
-
-    <div id="viewTradeModal" class="modal" style="display: none;">
-        <div class="modal-content" style="padding: 0.9rem; font-size: 0.9rem;">
-            <span class="close" id="closeViewTradeModal" style="font-size: 0.9rem;">&times;</span>
-            <h3 style="font-size: 0.9rem; margin-bottom: 0.9rem;">Trade Details</h3>
-            <div id="tradeDetailsContent" style="font-size: 0.9rem;">
-                <!-- Trade details will be dynamically added here -->
-            </div>
-            <div class="form-group d-flex align-items-center" style="margin-bottom: 0.9rem;">
-                <label for="disableTakeProfit" style="font-size: 0.9rem; margin-right: 0.5rem;">Disable Take Profit</label>
-                <input type="checkbox" id="disableTakeProfit" class="form-control" style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem; width: 1.2rem;">
-            </div>
-            <div class="form-group d-flex align-items-center" style="margin-bottom: 0.9rem;">
-                <label for="disableStopLoss" style="font-size: 0.9rem; margin-right: 0.5rem;">Disable Stop Loss</label>
-                <input type="checkbox" id="disableStopLoss" class="form-control" style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem; width: 1.2rem;">
-            </div>
-            <div id="takeProfitStopLossFields">
-                <div class="form-group" style="margin-bottom: 0.9rem;">
-                    <label for="takeProfit" style="font-size: 0.9rem;">Take Profit</label>
-                    <input type="number" id="takeProfit" class="form-control" placeholder="Take Profit" style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem;">
+        <div class="trades-container">
+            <br><br>
+            <h2 class="text-center mb-4">Your Trades</h2>
+            <div class="mb-4 d-flex justify-content-between">
+                <div>
+                    <label for="statusFilter" class="mr-2">Filter by Status:</label>
+                    <select id="statusFilter" class="filter-select">
+                        <option value="All">All</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Failed">Failed</option>
+                        <option value="Sold">Sold</option>
+                    </select>
                 </div>
-                <div class="form-group" style="margin-bottom: 0.9rem;">
-                    <label for="stopLoss" style="font-size: 0.9rem;">Stop Loss</label>
-                    <input type="number" class="form-control" id="stopLoss" name="stopLoss" required style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem;">
-                    <div id="stopLossError" class="text-danger" style="display: none; font-size: 0.7rem;">Stop Loss must be a negative number.</div>
+                <div>
+                    <label for="platformFilter" class="mr-2">Filter by Platform:</label>
+                    <select id="platformFilter" class="filter-select">
+                        <option value="All">All</option>
+                        <option value="Pump">Pump</option>
+                        <option value="Raydium">Raydium</option>
+                        <option value="Other">Other</option>
+                    </select>
                 </div>
-                <button id="confirmUpdateTrade" class="btn btn-success" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Update Trade</button>
+            </div>
+            <div class="scrollable-table">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>S/N</th>
+                            <th>Trade ID</th>
+                            <th>Mint</th>
+                            <th>Name</th>
+                            <th>S/L</th>
+                            <th>T/P</th>
+                            <th>Amount</th>
+                            <th>PnL</th>
+                            <th>Platform</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="trade-list">
+                        <!-- Trades will be dynamically added here -->
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
 
-    <!-- Loading, Success, and Error Messages Overlay -->
+        <!-- Sell Transaction Modal -->
+        <div id="sellModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" id="closeSellModal">&times;</span>
+                <h3>Sell Transaction</h3>
+                <div class="form-group">
+                    <label for="sellFromAddress">From Address</label>
+                    <input type="text" id="sellFromAddress" class="form-control" placeholder="From Address" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="sellToAddress">To Address</label>
+                    <input type="text" id="sellToAddress" class="form-control" value="So11111111111111111111111111111111111111112" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="sellPercentage">Sell Percentage</label>
+                    <select id="sellPercentage" class="form-control">
+                        <option value="100">100%</option>
+                        <option value="75">75%</option>
+                        <option value="50">50%</option>
+                        <option value="25">25%</option>
+                    </select>
+                </div>
+                <button id="confirmSell" class="btn btn-success">Confirm</button>
+            </div>
+        </div>
+
+        <!-- Update Trade Status Modal -->
+        <div id="updateStatusModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" id="closeUpdateStatusModal">&times;</span>
+                <h3>Update Trade Status</h3>
+                <div class="form-group">
+                    <label for="updateStatusContractAddress">Contract Address</label>
+                    <input type="text" id="updateStatusContractAddress" class="form-control" placeholder="Contract Address" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="updateStatusSelect">New Status</label>
+                    <select id="updateStatusSelect" class="form-control">
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Failed">Failed</option>
+                        <option value="Sold">Sold</option>
+                    </select>
+                </div>
+                <button id="confirmUpdateStatus" class="btn btn-success">Confirm</button>
+            </div>
+        </div>
+    
+
+        <div id="viewTradeModal" class="modal" style="display: none;">
+            <div class="modal-content" style="width: 150%; max-width: 1500px; height: 90vh; max-height: 900px; margin: auto; background-color: #343a40; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column;">
+                <!-- Modal Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #4b4b5b;">
+                    <h3 style="font-size: 1rem; margin: 0; color: #fff;">Trade Details</h3>
+                    <button id="closeViewTradeModal" class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Close</button>
+                </div>
+        
+                <!-- Tabs -->
+                <div style="display: flex; border-bottom: 1px solid #4b4b5b;">
+                    <button id="chartTab" class="tab-button active" style="flex: 1; padding: 0.5rem; text-align: center; color: #fff; background-color: #2c3035; border: none; cursor: pointer;">Chart</button>
+                    <button id="detailsTab" class="tab-button" style="flex: 1; padding: 0.5rem; text-align: center; color: #fff; background-color: #2c3035; border: none; cursor: pointer;">Details</button>
+                </div>
+        
+                <!-- Tab Content -->
+                <div id="tabContent" style="flex: 1; display: flex; flex-direction: column;">
+                    <!-- Chart Tab Content -->
+                    <div id="chartTabContent" style="display: block; flex: 1; padding: 1rem; background-color: #2c3035; border-bottom: 1px solid #4b4b5b;">
+                        <div id="tradeChartCanvas" style="width: 100%; height: 100%; background-color: #1e2125; border-radius: 8px; display: flex; justify-content: center; align-items: center;">
+                            <!-- Chart will be dynamically loaded here -->
+                            <span style="color: #fff;">Loading Chart...</span>
+                        </div>
+                    </div>
+        
+                    <!-- Details Tab Content -->
+                    <div id="detailsTabContent" style="display: none; flex: 1; padding: 1rem; background-color: #2c3035;">
+                        <div style="display: flex; flex-direction: row; gap: 1rem;">
+                            <!-- Left Side: Trade Details -->
+                            <div style="flex: 1;">
+                                <div id="tradeDetailsContent" style="font-size: 0.9rem; color: #fff;">
+                                    <!-- Trade details will be dynamically added here -->
+                                </div>
+                            </div>
+        
+                            <!-- Right Side: Configuration -->
+                            <div style="flex: 1;">
+                                <div class="form-group d-flex align-items-center" style="margin-bottom: 0.9rem;">
+                                    <label for="disableTakeProfit" style="font-size: 0.9rem; margin-right: 0.5rem; color: #fff;">Disable Take Profit</label>
+                                    <input type="checkbox" id="disableTakeProfit" class="form-control" style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem; width: 1.2rem;">
+                                </div>
+                                <div class="form-group d-flex align-items-center" style="margin-bottom: 0.9rem;">
+                                    <label for="disableStopLoss" style="font-size: 0.9rem; margin-right: 0.5rem; color: #fff;">Disable Stop Loss</label>
+                                    <input type="checkbox" id="disableStopLoss" class="form-control" style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem; width: 1.2rem;">
+                                </div>
+                                <div id="takeProfitStopLossFields">
+                                    <div class="form-group" style="margin-bottom: 0.9rem;">
+                                        <label for="takeProfit" style="font-size: 0.9rem; color: #fff;">Take Profit</label>
+                                        <input type="number" id="takeProfit" class="form-control" placeholder="Take Profit" style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem;">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 0.9rem;">
+                                        <label for="stopLoss" style="font-size: 0.9rem; color: #fff;">Stop Loss</label>
+                                        <input type="number" class="form-control" id="stopLoss" name="stopLoss" required style="padding: 0.2rem; font-size: 0.8rem; height: 1.2rem;">
+                                        <div id="stopLossError" class="text-danger" style="display: none; font-size: 0.7rem;">Stop Loss must be a negative number.</div>
+                                    </div>
+                                    <button id="confirmUpdateTrade" class="btn btn-success" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Update Trade</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                 
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading, Success, and Error Messages Overlay -->
+        <!-- Loading, Success, and Error Messages Overlay -->
     <div id="loadingOverlay" class="message-overlay" style="display: none;">
-        <div class="message-content">
+        <div class="message-content" style="display: inline-flex; align-items: center; gap: 10px;">
             <div class="loading-spinner"></div>
-            <span>Processing...</span>
+            <span style="color: black;">Processing...</span>
         </div>
     </div>
 
     <div id="successOverlay" class="message-overlay" style="display: none;">
-        <div class="message-content success">
+        <div class="message-content success"  style="color: black;">
             <span>Successful!</span>
         </div>
     </div>
 
     <div id="errorOverlay" class="message-overlay" style="display: none;">
-        <div class="message-content error">
+        <div class="message-content error" style="color: black;">
             <span id="errorMessageText"></span>
         </div>
     </div>
+    
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+        <script>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  
-    <script>
+            
+    document.addEventListener('DOMContentLoaded', () => {
 
-        
-document.getElementById('stopLoss').addEventListener('input', function() {
-            const stopLossValue = parseFloat(this.value);
-            const errorMessage = document.getElementById('stopLossError');
+        const showXError = (message) => {
+        const errorOverlay = document.getElementById('errorOverlay');
+        const errorMessageText = document.getElementById('errorMessageText');
 
-            if (stopLossValue >= 0) {
-                errorMessage.style.display = 'block';
-                this.setCustomValidity('Stop Loss must be a negative number.');
-            } else {
-                errorMessage.style.display = 'none';
-                this.setCustomValidity('');
-            }
-        });
-   document.addEventListener('DOMContentLoaded', () => {
-          
-          const getCookieValue = (name) => {
-                      if (typeof document === 'undefined') {
-                          return null;
-                      }
-                      const cookies = document.cookie.split(';');
-                      const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
-                      return cookie ? cookie.split('=')[1] : null;
-                  };
-          
-                  const checkAuth = () => {
-          const token = getCookieValue('token');
-          const telegramId = getCookieValue('telegramId');
-          
-          if (!token || token === 'false' || !telegramId) {
-             window.location.href = '/';
-             return false;
-          }
-          return true;
-          };
-          
-          
-          if (!checkAuth()) {
-                     return;
-                 }
+        if (errorOverlay && errorMessageText) {
+            errorMessageText.textContent = message;
+            errorOverlay.style.display = 'flex';
 
-        // Vanilla JavaScript Implementation
+            setTimeout(() => {
+                errorOverlay.style.display = 'none';
+            }, 3000);
+        } else {
+            console.error('Error overlay or message element not found.');
+        }
+    };
+
         const BASE_URL = 'https://project25backend.onrender.com/api/v1';
 
-        // State variables
-        let trades = [];
-        let filterStatus = 'All';
-        let filterPlatform = 'All';
-        let selectedTrade = null;
-        let sellTrade = null;
-        let retryTrade = null;
-        let selectedSellPercentage = 100;
-        let manualAmount = '';
-        let manualSlippage = '';
-        let manualTipMiner = '';
-        let isLoading = false;
-        let isSuccess = false;
-        let errorMessage = '';
-        let tipAmount = 0.0001;
-        let slippage = 10;
-        let tradeFetchInterval;
+    // State variables
+    let trades = [];
+    let selectedTrade = null;
+    let currentToken = null; 
+    let activeTrade = null; // Tracks the currently active trade
 
-        const formatContractAddress = (address) => {
-            if (address.length > 8) {
-                return `${address.slice(0, 4)}...${address.slice(-4)}`;
-            }
-            return address;
-        };
 
-        const formatTradeId = (tradeId) => {
-            if (tradeId.length > 5) {
-                return `...${tradeId.slice(-5)}`;
-            }
-            return tradeId;
-        };
 
-            const formatPnL = (pnl) => {
-        // Check if pnl is undefined, null, or not a number
-        if (pnl === undefined || pnl === null || isNaN(pnl)) {
-            pnl = 0; // Set pnl to 0 if it's not valid
-        }
+        const chartTab = document.getElementById('chartTab');
+        const detailsTab = document.getElementById('detailsTab');
+        const chartTabContent = document.getElementById('chartTabContent');
+        const detailsTabContent = document.getElementById('detailsTabContent');
 
-        const isProfit = pnl > 0;
-        const directionIcon = isProfit ? '↑' : '↓';
-        const pnlClass = isProfit ? 'text-green-500 blink' : 'text-red-500 blink';
-        const pnlValue = `${directionIcon} ${pnl}%`;
+        // Tab functionality
+        chartTab.addEventListener('click', () => {
+            chartTab.classList.add('active');
+            detailsTab.classList.remove('active');
+            chartTabContent.style.display = 'block';
+            detailsTabContent.style.display = 'none';
+        });
 
-        return `
-            <div class="flex justify-center items-center space-x-2">
-                <span class="pnl-icon ${pnlClass}">
-                    ${pnlValue}
-                </span>
-                <button class="text-blue-500">
-                    <i class="fas fa-download"></i>
-                </button>
-            </div>
-        `;
-    };
-        const handleActionClick = (trade) => {
-            const updatedTrade = {
-                ...trade,
-                status: trade.status === 'Completed' ? 'Pending' : 'Completed'
-            };
-            selectedTrade = updatedTrade;
-            renderSelectedTrade();
-        };
-
-        const handleRetryClick = async (trade) => {
-    const telegramId = getCookieValue('telegramId');
-    const outputMint = trade.contractAddress;
-    const inputMint = 'So11111111111111111111111111111111111111112';
-
-    showLoading();
-
-    try {
-        let response;
-        if (trade.platform.toLowerCase() === 'pump') {
-            response = await fetch(`${BASE_URL}/trade/pump-buy`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    inputMint,
-                    outputMint,
-                    telegramId,
-                })
-            });
-        } else if (trade.platform.toLowerCase() === 'raydium') {
-            response = await fetch(`${BASE_URL}/trade/buy-token`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    inputMint,
-                    outputMint,
-                    telegramId,
-                })
-            });
-        } else {
-            throw new Error('Unsupported platform for retry transaction');
-        }
-
-        const contentType = response.headers.get("content-type");
-        let data;
-
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            const text = await response.text();
-            console.error('Expected JSON but received:', text);
-            showError('Unexpected response from server.');
-            return;
-        }
-
-        if (response.ok) {
-            showSuccess();
-        } else {
-            showError(data.message || 'Transaction failed');
-        }
-    } catch (error) {
-        console.error('Error submitting retry transaction:', error);
-        showError('An error occurred. Please try again.');
-    } finally {
-        hideLoading();
-    }
-};
-
-        const handleSellClick = (trade) => {
-            sellTrade = trade;
-            showModal('sellModal');
-            document.getElementById('sellFromAddress').value = trade.contractAddress;
-        };
-
-        const handleViewClick = (trade) => {
-            selectedTrade = trade;
-            showModal('viewTradeModal');
-            renderTradeDetails();
-        };
-
-        // Function to handle sell transaction
-     
-        const handleSellTransaction = async () => {
-    const telegramId = getCookieValue('telegramId');
-    const fromMint = document.getElementById('sellFromAddress').value;
-    const toMint = 'So11111111111111111111111111111111111111112';
-    const sellPercentage = document.getElementById('sellPercentage').value;
-    const tradeId = sellTrade.tradeId; // Include tradeId in the payload
-
-    hideModal('sellModal');
-
-    showLoading();
-
-    try {
-        let response;
-        if (sellTrade.platform === 'raydium') {
-            response = await fetch(`${BASE_URL}/trade/sell-token`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    telegramId,
-                    fromMint,
-                    toMint,
-                    sellPercentage,
-                    tradeId, 
-                })
-            });
-        } else if (sellTrade.platform === 'pump') {
-            response = await fetch(`${BASE_URL}/trade/pump-sell`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    telegramId,
-                    fromMint,
-                    toMint,
-                    sellPercentage,
-                    tradeId, // Include tradeId in the payload
-                })
-            });
-        } else {
-            throw new Error('Unsupported platform for sell transaction');
-        }
-
-        const contentType = response.headers.get("content-type");
-        let data;
-
-        if (contentType && contentType.includes("application/json")) {
-            data = await response.json();
-        } else {
-            const text = await response.text();
-            console.error('Expected JSON but received:', text);
-            showError('Unexpected response from server.');
-            return;
-        }
-
-        if (response.ok) {
-            showSuccess();
-        } else {
-            showError(data.message || 'Transaction failed');
-        }
-    } catch (error) {
-        console.error('Error submitting sell transaction:', error);
-        showError('An error occurred. Please try again.');
-    } finally {
-        hideLoading();
-        hideModal('sellModal');
-    }
-};
-     
-
-        const handleUpdateStatusTransaction = async () => {
-            const telegramId = getCookieValue('telegramId');
-            const contractAddress = document.getElementById('updateStatusContractAddress').value;
-            const newStatus = document.getElementById('updateStatusSelect').value;
-
-            hideModal('updateStatusModal');
-
-            showLoading();
-
-            try {
-                const response = await fetch(`${BASE_URL}/trade/update-status`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        telegramId,
-                        contractAddress,
-                        newStatus,
-                    })
-                });
-
-                const contentType = response.headers.get("content-type");
-                let data;
-
-                if (contentType && contentType.includes("application/json")) {
-                    data = await response.json();
-                } else {
-                    const text = await response.text();
-                    console.error('Expected JSON but received:', text);
-                    showError('Unexpected response from server.');
-                    return;
-                }
-
-                if (response.ok) {
-                    showSuccess();
-                    fetchTrades(); // Refresh trades after update
-                } else {
-                    showError(data.message || 'Transaction failed');
-                }
-            } catch (error) {
-                console.error('Error submitting update status transaction:', error);
-                showError('An error occurred. Please try again.');
-            } finally {
-                hideLoading();
-                hideModal('updateStatusModal');
-            }
-        };
-
-        const renderSelectedTrade = () => {
-            const selectedTradeDiv = document.createElement('div');
-            selectedTradeDiv.className = 'mt-4 p-4 border border-gray-700 bg-gray-900 text-white';
-            selectedTradeDiv.innerHTML = `
-                <h2 class="text-xl font-bold">Selected Trade</h2>
-                <p><strong>Contract Address:</strong> ${selectedTrade.contractAddress}</p>
-                <p><strong>Name:</strong> ${selectedTrade.name}</p>
-            `;
-            document.querySelector('.trades-container').appendChild(selectedTradeDiv);
-        };
+        detailsTab.addEventListener('click', () => {
+            detailsTab.classList.add('active');
+            chartTab.classList.remove('active');
+            detailsTabContent.style.display = 'block';
+            chartTabContent.style.display = 'none';
+        });
 
       
-        const renderTrades = () => {
-    const tradeList = document.getElementById('trade-list');
-    tradeList.innerHTML = '';
 
-    const filteredTrades = trades.filter(trade => {
-        const statusMatches = filterStatus === 'All' || trade.status === filterStatus;
-        const platformMatches = filterPlatform === 'All' || trade.platform === filterPlatform;
-        return statusMatches && platformMatches;
-    });
-
-    filteredTrades.reverse().forEach((trade, index) => {
-        const row = document.createElement('tr');
-        row.className = trade.percentageChange >= 0 ? 'trade-row-positive' : 'trade-row-negative';
-
-        const serialNumberCell = document.createElement('td');
-        serialNumberCell.className = 'py-2 px-4 text-center';
-        serialNumberCell.textContent = index + 1;
-        row.appendChild(serialNumberCell);
-
-        const tradeIdCell = document.createElement('td');
-        tradeIdCell.className = 'py-2 px-4 text-center';
-        tradeIdCell.textContent = formatTradeId(trade.tradeId);
-        row.appendChild(tradeIdCell);
-
-        const contractAddressCell = document.createElement('td');
-        contractAddressCell.className = 'py-2 px-4 text-center';
-        contractAddressCell.textContent = formatContractAddress(trade.contractAddress);
-        row.appendChild(contractAddressCell);
-
-        const nameCell = document.createElement('td');
-        nameCell.className = 'py-2 px-4 text-center';
-        nameCell.textContent = trade.name;
-        row.appendChild(nameCell);
-
-        const stopLossCell = document.createElement('td');
-        stopLossCell.className = 'py-2 px-4 text-center';
-        stopLossCell.textContent = trade.stopLoss;
-        row.appendChild(stopLossCell);
-
-        const takeProfitCell = document.createElement('td');
-        takeProfitCell.className = 'py-2 px-4 text-center';
-        takeProfitCell.textContent = trade.takeProfit;
-        row.appendChild(takeProfitCell);
-
-        const amountCell = document.createElement('td');
-        amountCell.className = 'py-2 px-4 text-center';
-        amountCell.textContent = trade.amount;
-        row.appendChild(amountCell);
-
-        const pnlCell = document.createElement('td');
-        pnlCell.className = 'py-2 px-4 text-center';
-        pnlCell.innerHTML = formatPnL(trade.percentageChange);
-        row.appendChild(pnlCell);
-
-        const platformCell = document.createElement('td');
-        platformCell.className = 'py-2 px-4 text-center';
-        platformCell.textContent = trade.platform;
-        row.appendChild(platformCell);
-
-        const statusCell = document.createElement('td');
-        statusCell.className = 'py-2 px-4 text-center';
-        statusCell.textContent = trade.status;
-        row.appendChild(statusCell);
-
-        const actionCell = document.createElement('td');
-        actionCell.className = 'py-2 px-4 text-center';
-
-        const viewButton = document.createElement('button');
-        viewButton.textContent = 'View';
-        Object.assign(viewButton.style, {
-            fontSize: '0.9rem',
-            padding: '6px 12px',
-            borderRadius: '6px',
-            backgroundColor: '#333',
-            color: 'white',
-            border: 'none',
-            cursor: 'pointer',
-            margin: '4px 0',
-            minWidth: '80px',
-            textAlign: 'center',
-        });
-        viewButton.addEventListener('click', () => handleViewClick(trade));
-        actionCell.appendChild(viewButton);
-
-        if (trade.status !== 'Sold') {
-            if (trade.status === 'Completed') {
-                const sellButton = document.createElement('button');
-                sellButton.textContent = 'Sell';
-                Object.assign(sellButton.style, {
-                    fontSize: '0.9rem',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    backgroundColor: '#f56565',
-                    color: 'white',
-                    border: 'none',
-                    cursor: 'pointer',
-                    margin: '4px 0',
-                    minWidth: '80px',
-                    textAlign: 'center',
-                });
-                sellButton.addEventListener('click', () => handleSellClick(trade));
-                actionCell.appendChild(sellButton);
-            } else {
-                const retryButton = document.createElement('button');
-                retryButton.textContent = 'Retry';
-                Object.assign(retryButton.style, {
-                    fontSize: '0.9rem',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    backgroundColor: '#3182ce',
-                    color: 'white',
-                    border: 'none',
-                    cursor: 'pointer',
-                    margin: '4px 0',
-                    minWidth: '80px',
-                    textAlign: 'center',
-                });
-                retryButton.addEventListener('click', () => handleRetryClick(trade));
-                actionCell.appendChild(retryButton);
-            }
-        }
-
-        row.appendChild(actionCell);
-        tradeList.appendChild(row);
-    });
-};
-
-
-const disableTakeProfitCheckbox = document.getElementById('disableTakeProfit');
-    const disableStopLossCheckbox = document.getElementById('disableStopLoss');
-    const takeProfitInput = document.getElementById('takeProfit');
-    const stopLossInput = document.getElementById('stopLoss');
-
-    const renderTradeDetails = () => {
-        const tradeDetailsContent = document.getElementById('tradeDetailsContent');
-        const takeProfitStopLossFields = document.getElementById('takeProfitStopLossFields');
-
-        // Debugging: log the platform value to verify
-        console.log('Selected Trade Platform:', selectedTrade.platform);
-
-        // Determine the correct URL and link text based on the platform
-        let pumpLikeUrl = '';
-        let pumpLikeText = '';
-        
-        if (selectedTrade.platform.toLowerCase() === 'pump') {
-            pumpLikeUrl = `https://pump.fun/coin/${selectedTrade.contractAddress}`;
-            pumpLikeText = 'Pump Url';
-        } else if (selectedTrade.platform.toLowerCase() === 'raydium') {
-            pumpLikeUrl = `https://dexscreener.com/solana/${selectedTrade.contractAddress}`;
-            pumpLikeText = 'Raydium Url';
-        }
-
-        tradeDetailsContent.innerHTML = `
-            <p><strong>Trade ID:</strong> ${formatTradeId(selectedTrade.tradeId)}</p>
-            <p><strong>Platform:</strong> ${selectedTrade.platform}</p>
-            <p><strong>Active:</strong> ${selectedTrade.isSnipeActive ? 'Yes' : 'No'}</p>
-            <p><strong>Tokens Bought:</strong> ${selectedTrade.tokenBought}</p>
-            <p><strong>Buy Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.buyTx}" target="_blank">View Tx</a></p>
-            <p><strong>Sell Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.sellTx}" target="_blank">View Tx</a></p>
-            <p><strong>Status:</strong> ${selectedTrade.status}</p>
-            <p><strong>Blockchain:</strong> ${selectedTrade.blockchain}</p>
-            <p><strong>View on Platform:</strong> 
-                <a href="${pumpLikeUrl}" target="_blank">${pumpLikeText}</a>
-            </p>
-        `;
-
-        // Set the checkbox state based on isSnipeActive
-        disableTakeProfitCheckbox.checked = !selectedTrade.isTakeProfitActive;
-        disableStopLossCheckbox.checked = !selectedTrade.isStopLossActive;
-
-        // Populate the input fields with the current values
-        takeProfitInput.value = selectedTrade.takeProfit;
-        stopLossInput.value = selectedTrade.stopLoss;
-
-        // Add event listeners to the checkboxes
-        disableTakeProfitCheckbox.addEventListener('change', async () => {
-            const isTakeProfitActive = !disableTakeProfitCheckbox.checked;
-            await updateTrade({ isTakeProfitActive });
-            takeProfitInput.style.display = disableTakeProfitCheckbox.checked ? 'none' : 'block';
-        });
-
-        disableStopLossCheckbox.addEventListener('change', async () => {
-            const isStopLossActive = !disableStopLossCheckbox.checked;
-            await updateTrade({ isStopLossActive });
-            stopLossInput.style.display = disableStopLossCheckbox.checked ? 'none' : 'block';
-        });
-
-        // Initially hide the input fields if the checkboxes are checked
-        takeProfitInput.style.display = disableTakeProfitCheckbox.checked ? 'none' : 'block';
-        stopLossInput.style.display = disableStopLossCheckbox.checked ? 'none' : 'block';
-    };
-
-    const updateTrade = async (config) => {
-        if (!selectedTrade) {
-            showError('No trade selected for update.');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${BASE_URL}/users/update-trade-by-ids/${selectedTrade.tradeId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(config)
-            });
-
-            if (response.status === 200) {
-                const data = await response.json();
-                showSuccess();
-                fetchTrades(); // Refresh trades after update
-            } else {
-                throw new Error('Failed to update trade');
-            }
-        } catch (error) {
-            console.error('Error updating trade:', error);
-            showError('Failed to update trade. Please try again.');
-        }
-    };
-
-    // Event listener for updating trade details
-    document.getElementById('confirmUpdateTrade').addEventListener('click', async () => {
-        const takeProfit = takeProfitInput.value;
-        const stopLoss = stopLossInput.value;
-
-        if (!selectedTrade) {
-            showError('No trade selected for update.');
-            return;
-        }
-
-        const config = {
-            takeProfit: parseFloat(takeProfit),
-            stopLoss: parseFloat(stopLoss)
-        };
-
-        try {
-            const response = await fetch(`${BASE_URL}/users/update-trade-by-ids/${selectedTrade.tradeId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(config)
-            });
-
-            if (response.status === 200) {
-                const data = await response.json();
-                showSuccess();
-                fetchTrades(); // Refresh trades after update
-            } else {
-                throw new Error('Failed to update trade');
-            }
-        } catch (error) {
-            console.error('Error updating trade:', error);
-            showError('Failed to update trade. Please try again.');
-        } finally {
-            hideModal('viewTradeModal');
-        }
-    });
-
-
-const fetchTrades = async () => {
+        const fetchTrades = async () => {
             try {
                 const telegramId = getCookieValue('telegramId');
                 const response = await fetch(`${BASE_URL}/fetchTrades/${telegramId}`);
@@ -939,132 +460,676 @@ const fetchTrades = async () => {
             }
         };
 
-        const setFilterStatus = (status) => {
-            filterStatus = status;
-            renderTrades();
-        };
+     
+        const renderTrades = () => {
+            const tradeList = document.getElementById('trade-list');
+            tradeList.innerHTML = '';
 
-        const setFilterPlatform = (platform) => {
-            filterPlatform = platform;
-            renderTrades();
-        };
+            trades.forEach((trade, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${formatTradeId(trade.tradeId)}</td>
+                    <td>${formatContractAddress(trade.contractAddress)}</td>
+                    <td>${trade.name}</td>
+                    <td>${trade.stopLoss}</td>
+                    <td>${trade.takeProfit}</td>
+                    <td>${trade.amount}</td>
+                    <td>${formatPnL(trade.percentageChange)}</td>
+                    <td>${trade.platform}</td>
+                    <td>${trade.status}</td>
+                    <td>
+                        <button class="view-button" data-trade-id="${trade.tradeId}">View</button>
+                    </td>
+                `;
+                tradeList.appendChild(row);
+            });
 
-        const setSelectedSellPercentage = (percentage) => {
-            selectedSellPercentage = percentage;
+            // Add event listeners to "View" buttons
+            document.querySelectorAll('.view-button').forEach(button => {
+    button.addEventListener('click', () => {
+        console.log('Button dataset:', button.dataset); // Debugging
+        handleViewClick(button.dataset.tradeId);
+    });
+});
         };
+        
+        const renderTradeDetails = async () => {
+    const tradeDetailsContent = document.getElementById('tradeDetailsContent');
+    const tradeChartCanvas = document.getElementById('tradeChartCanvas');
+  
+    // Debugging: log the platform value to verify
+    console.log('Selected Trade Platform:', selectedTrade.platform);
 
-        const setManualAmount = (amount) => {
-            manualAmount = amount;
-        };
+    // Determine the correct URL and link text based on the platform
+    let pumpLikeUrl = '';
+    let pumpLikeText = '';
+    
+    if (selectedTrade.platform.toLowerCase() === 'pump') {
+        pumpLikeUrl = `https://pump.fun/coin/${selectedTrade.contractAddress}`;
+        pumpLikeText = 'Pump Url';
+    } else if (selectedTrade.platform.toLowerCase() === 'raydium') {
+        pumpLikeUrl = `https://dexscreener.com/solana/${selectedTrade.contractAddress}`;
+        pumpLikeText = 'Raydium Url';
+    }
 
-        const setManualSlippage = (slippage) => {
-            manualSlippage = slippage;
-        };
+    // Dynamically load the chart into the canvas
+    tradeChartCanvas.innerHTML = `<iframe src="https://www.gmgn.cc/kline/sol/${selectedTrade.contractAddress}" frameborder="0" style="width: 100%; height: 100%; border-radius: 8px;"></iframe>`;
 
-        const setManualTipMiner = (tipMiner) => {
-            manualTipMiner = tipMiner;
-        };
+    tradeDetailsContent.innerHTML = `
+        <p><strong>Trade ID:</strong> ${formatTradeId(selectedTrade.tradeId)}</p>
+        <p><strong>Platform:</strong> ${selectedTrade.platform}</p>
+        <p><strong>Active:</strong> ${selectedTrade.isSnipeActive ? 'Yes' : 'No'}</p>
+        <p><strong>Tokens Bought:</strong> ${selectedTrade.tokenBought}</p>
+        <p><strong>Buy Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.buyTx}" target="_blank">View Tx</a></p>
+        <p><strong>Sell Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.sellTx}" target="_blank">View Tx</a></p>
+        <p><strong>Status:</strong> ${selectedTrade.status}</p>
+        <p><strong>Blockchain:</strong> ${selectedTrade.blockchain}</p>
+        <p><strong>View on Platform:</strong> 
+            <a href="${pumpLikeUrl}" target="_blank">${pumpLikeText}</a>
+        </p>
+        <p><strong>Scan Token:</strong> 
+            <a href="https://rugcheck.xyz/tokens/${selectedTrade.contractAddress}" target="_blank">Scan Token</a>
+        </p>
+    `;
 
-        const setTipAmount = (amount) => {
-            tipAmount = amount;
-        };
+    // Set the checkbox state based on isSnipeActive
+    disableTakeProfitCheckbox.checked = !selectedTrade.isTakeProfitActive;
+    disableStopLossCheckbox.checked = !selectedTrade.isStopLossActive;
 
-        const setSlippage = (slippageValue) => {
-            slippage = slippageValue;
-        };
+    // Populate the input fields with the current values
+    takeProfitInput.value = selectedTrade.takeProfit;
+    stopLossInput.value = selectedTrade.stopLoss;
+};
 
-        const setIsLoading = (loading) => {
-            isLoading = loading;
-            if (loading) {
-                showLoading();
-            } else {
-                hideLoading();
-            }
-        };
 
-        const setSellTrade = (trade) => {
-            sellTrade = trade;
-            if (trade) {
-                showModal('sellModal');
-            } else {
-                hideModal('sellModal');
-            }
-        };
 
-        const setRetryTrade = (trade) => {
-            retryTrade = trade;
-            if (trade) {
-                showModal('retryModal');
-            } else {
-                hideModal('retryModal');
-            }
-        };
 
-        const showModal = (modalId) => {
-            const modal = document.getElementById(modalId);
-            modal.style.display = 'flex';
-            pauseTradeFetching(); // Pause fetching when a modal is opened
-        };
+const resetModal = () => {
+    // Clear the content of the modal
+    const modalContent = document.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.innerHTML = '';
+    }
+
+    // Reset the selectedTrade variable
+    selectedTrade = null;
+};
 
         const hideModal = (modalId) => {
-            const modal = document.getElementById(modalId);
-            modal.style.display = 'none';
-            resumeTradeFetching(); // Resume fetching when a modal is closed
-        };
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        resetModal(); // Call resetModal to clear the modal content and reset selectedTrade
+    }
+    resumeTradeFetching(); // Resume fetching trades after the modal is closed
+};
 
-        const pauseTradeFetching = () => {
-            clearInterval(tradeFetchInterval);
-        };
-
-        const resumeTradeFetching = () => {
-            tradeFetchInterval = setInterval(fetchTrades, 10000);
-        };
-
-        const showLoading = () => {
-            document.getElementById('loadingOverlay').style.display = 'flex';
-        };
-
-        const hideLoading = () => {
-            document.getElementById('loadingOverlay').style.display = 'none';
-        };
-
-        const showSuccess = () => {
-            document.getElementById('successOverlay').style.display = 'flex';
-            setTimeout(() => {
-                document.getElementById('successOverlay').style.display = 'none';
-            }, 3000);
-        };
-
-        const showError = (message) => {
-            document.getElementById('errorMessageText').textContent = message;
-            document.getElementById('errorOverlay').style.display = 'flex';
-            setTimeout(() => {
-                document.getElementById('errorOverlay').style.display = 'none';
-            }, 3000);
-        };
-
-        // Event listeners for filters
-        document.getElementById('statusFilter').addEventListener('change', (e) => setFilterStatus(e.target.value));
-        document.getElementById('platformFilter').addEventListener('change', (e) => setFilterPlatform(e.target.value));
-
-        // Event listeners for modal close buttons
-        document.getElementById('closeSellModal').addEventListener('click', () => hideModal('sellModal'));
-        document.getElementById('closeUpdateStatusModal').addEventListener('click', () => hideModal('updateStatusModal'));
-        document.getElementById('closeViewTradeModal').addEventListener('click', () => hideModal('viewTradeModal'));
-
-        // Event listeners for modal confirm buttons
-        document.getElementById('confirmSell').addEventListener('click', async () => {
-            await handleSellTransaction();
+        // Close button functionality
+        document.getElementById('closeViewTradeModal').addEventListener('click', () => {
+            hideModal('viewTradeModal');
         });
 
-        document.getElementById('confirmUpdateStatus').addEventListener('click', async () => {
-            await handleUpdateStatusTransaction();
+        // Fetch trades and render details
+        fetchTrades();
+    });
+    
+    
+    
+            document.addEventListener('DOMContentLoaded', () => {
+            
+                const showError = (message) => {
+                document.getElementById('errorMessageText').textContent = message;
+                document.getElementById('errorOverlay').style.display = 'flex';
+                setTimeout(() => {
+                    document.getElementById('errorOverlay').style.display = 'none';
+                }, 3000);
+            };
+
+            const getCookieValue = (name) => {
+                        if (typeof document === 'undefined') {
+                            return null;
+                        }
+                        const cookies = document.cookie.split(';');
+                        const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
+                        return cookie ? cookie.split('=')[1] : null;
+                    };
+            
+                    const checkAuth = () => {
+            const token = getCookieValue('token');
+            const telegramId = getCookieValue('telegramId');
+            
+            if (!token || token === 'false' || !telegramId) {
+                window.location.href = '/';
+                return false;
+            }
+            return true;
+            };
+            
+            
+            if (!checkAuth()) {
+                        return;
+                    }
+
+            // Vanilla JavaScript Implementation
+            const BASE_URL = 'https://project25backend.onrender.com/api/v1';
+
+            // State variables
+            let trades = [];
+            let filterStatus = 'All';
+            let filterPlatform = 'All';
+            let selectedTrade = null;
+            let sellTrade = null;
+            let retryTrade = null;
+            let selectedSellPercentage = 100;
+            let manualAmount = '';
+            let manualSlippage = '';
+            let manualTipMiner = '';
+            let isLoading = false;
+            let isSuccess = false;
+            let errorMessage = '';
+            let tipAmount = 0.0001;
+            let slippage = 10;
+            let tradeFetchInterval;
+
+            const formatContractAddress = (address) => {
+                if (address.length > 8) {
+                    return `${address.slice(0, 4)}...${address.slice(-4)}`;
+                }
+                return address;
+            };
+
+            const formatTradeId = (tradeId) => {
+                if (tradeId.length > 5) {
+                    return `...${tradeId.slice(-3)}`;
+                }
+                return tradeId;
+            };
+
+                const formatPnL = (pnl) => {
+            // Check if pnl is undefined, null, or not a number
+            if (pnl === undefined || pnl === null || isNaN(pnl)) {
+                pnl = 0; // Set pnl to 0 if it's not valid
+            }
+
+            const isProfit = pnl > 0;
+            const directionIcon = isProfit ? '↑' : '↓';
+            const pnlClass = isProfit ? 'text-green-500 blink' : 'text-red-500 blink';
+            const pnlValue = `${directionIcon} ${pnl}%`;
+
+            return `
+                <div class="flex justify-center items-center space-x-2">
+                    <span class="pnl-icon ${pnlClass}">
+                        ${pnlValue}
+                    </span>
+                    <button class="text-blue-500">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            `;
+        };
+            const handleActionClick = (trade) => {
+                const updatedTrade = {
+                    ...trade,
+                    status: trade.status === 'Completed' ? 'Pending' : 'Completed'
+                };
+                selectedTrade = updatedTrade;
+                renderSelectedTrade();
+            };
+
+            const handleRetryClick = async (trade) => {
+        const telegramId = getCookieValue('telegramId');
+        const outputMint = trade.contractAddress;
+        const inputMint = 'So11111111111111111111111111111111111111112';
+
+        showLoading();
+
+        try {
+            let response;
+            if (trade.platform.toLowerCase() === 'pump') {
+                response = await fetch(`${BASE_URL}/trade/pump-buy`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        inputMint,
+                        outputMint,
+                        telegramId,
+                    })
+                });
+            } else if (trade.platform.toLowerCase() === 'raydium') {
+                response = await fetch(`${BASE_URL}/trade/buy-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        inputMint,
+                        outputMint,
+                        telegramId,
+                    })
+                });
+            } else {
+                throw new Error('Unsupported platform for retry transaction');
+            }
+
+            const contentType = response.headers.get("content-type");
+            let data;
+
+            if (contentType && contentType.includes("application/json")) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                console.error('Expected JSON but received:', text);
+                showError('Unexpected response from server.');
+                return;
+            }
+
+            if (response.ok) {
+                showSuccess();
+            } else {
+                showError(data.message || 'Transaction failed');
+            }
+        } catch (error) {
+            console.error('Error submitting retry transaction:', error);
+            showError('An error occurred. Please try again.');
+        } finally {
+            hideLoading();
+        }
+    };
+
+            const handleSellClick = (trade) => {
+                sellTrade = trade;
+                showModal('sellModal');
+                document.getElementById('sellFromAddress').value = trade.contractAddress;
+            };
+
+    
+        const handleViewClick = (trade) => {
+    selectedTrade = trade;
+    console.log(selectedTrade);
+    showModal('viewTradeModal');
+
+    // Set the active tab to the chart tab
+    chartTab.classList.add('active');
+    detailsTab.classList.remove('active');
+    chartTabContent.style.display = 'block';
+    detailsTabContent.style.display = 'none';
+
+    renderTradeDetails(); // This will now clear previous details and show new trade details
+};
+            // Function to handle sell transaction
+        
+            const handleSellTransaction = async () => {
+        const telegramId = getCookieValue('telegramId');
+        const fromMint = document.getElementById('sellFromAddress').value;
+        const toMint = 'So11111111111111111111111111111111111111112';
+        const sellPercentage = document.getElementById('sellPercentage').value;
+        const tradeId = sellTrade.tradeId; // Include tradeId in the payload
+
+        hideModal('sellModal');
+
+        showLoading();
+
+        try {
+            let response;
+            if (sellTrade.platform === 'raydium') {
+                response = await fetch(`${BASE_URL}/trade/sell-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        telegramId,
+                        fromMint,
+                        toMint,
+                        sellPercentage,
+                        tradeId, 
+                    })
+                });
+            } else if (sellTrade.platform === 'pump') {
+                response = await fetch(`${BASE_URL}/trade/pump-sell`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        telegramId,
+                        fromMint,
+                        toMint,
+                        sellPercentage,
+                        tradeId, // Include tradeId in the payload
+                    })
+                });
+            } else {
+                throw new Error('Unsupported platform for sell transaction');
+            }
+
+            const contentType = response.headers.get("content-type");
+            let data;
+
+            if (contentType && contentType.includes("application/json")) {
+                data = await response.json();
+            } else {
+                const text = await response.text();
+                console.error('Expected JSON but received:', text);
+                showError('Unexpected response from server.');
+                return;
+            }
+
+            if (response.ok) {
+                showSuccess();
+            } else {
+                showError(data.message || 'Transaction failed');
+            }
+        } catch (error) {
+            console.error('Error submitting sell transaction:', error);
+            showError('An error occurred. Please try again.');
+        } finally {
+            hideLoading();
+            hideModal('sellModal');
+        }
+    };
+        
+
+            const handleUpdateStatusTransaction = async () => {
+                const telegramId = getCookieValue('telegramId');
+                const contractAddress = document.getElementById('updateStatusContractAddress').value;
+                const newStatus = document.getElementById('updateStatusSelect').value;
+
+                hideModal('updateStatusModal');
+
+                showLoading();
+
+                try {
+                    const response = await fetch(`${BASE_URL}/trade/update-status`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            telegramId,
+                            contractAddress,
+                            newStatus,
+                        })
+                    });
+
+                    const contentType = response.headers.get("content-type");
+                    let data;
+
+                    if (contentType && contentType.includes("application/json")) {
+                        data = await response.json();
+                    } else {
+                        const text = await response.text();
+                        console.error('Expected JSON but received:', text);
+                        showError('Unexpected response from server.');
+                        return;
+                    }
+
+                    if (response.ok) {
+                        showSuccess();
+                        fetchTrades(); // Refresh trades after update
+                    } else {
+                        showError(data.message || 'Transaction failed');
+                    }
+                } catch (error) {
+                    console.error('Error submitting update status transaction:', error);
+                    showError('An error occurred. Please try again.');
+                } finally {
+                    hideLoading();
+                    hideModal('updateStatusModal');
+                }
+            };
+
+            const renderSelectedTrade = () => {
+                const selectedTradeDiv = document.createElement('div');
+                selectedTradeDiv.className = 'mt-4 p-4 border border-gray-700 bg-gray-900 text-white';
+                selectedTradeDiv.innerHTML = `
+                    <h2 class="text-xl font-bold">Selected Trade</h2>
+                    <p><strong>Contract Address:</strong> ${selectedTrade.contractAddress}</p>
+                    <p><strong>Name:</strong> ${selectedTrade.name}</p>
+                `;
+                document.querySelector('.trades-container').appendChild(selectedTradeDiv);
+            };
+
+        
+            const renderTrades = () => {
+        const tradeList = document.getElementById('trade-list');
+        tradeList.innerHTML = '';
+
+        const filteredTrades = trades.filter(trade => {
+            const statusMatches = filterStatus === 'All' || trade.status === filterStatus;
+            const platformMatches = filterPlatform === 'All' || trade.platform === filterPlatform;
+            return statusMatches && platformMatches;
         });
+
+        filteredTrades.reverse().forEach((trade, index) => {
+            const row = document.createElement('tr');
+            row.className = trade.percentageChange >= 0 ? 'trade-row-positive' : 'trade-row-negative';
+
+            const serialNumberCell = document.createElement('td');
+            serialNumberCell.className = 'py-2 px-4 text-center';
+            serialNumberCell.textContent = index + 1;
+            row.appendChild(serialNumberCell);
+
+            const tradeIdCell = document.createElement('td');
+            tradeIdCell.className = 'py-2 px-4 text-center';
+            tradeIdCell.textContent = formatTradeId(trade.tradeId);
+            row.appendChild(tradeIdCell);
+
+            const contractAddressCell = document.createElement('td');
+            contractAddressCell.className = 'py-2 px-4 text-center';
+            contractAddressCell.textContent = formatContractAddress(trade.contractAddress);
+            row.appendChild(contractAddressCell);
+
+            const nameCell = document.createElement('td');
+            nameCell.className = 'py-2 px-4 text-center';
+            nameCell.textContent = trade.name;
+            row.appendChild(nameCell);
+
+            const stopLossCell = document.createElement('td');
+            stopLossCell.className = 'py-2 px-4 text-center';
+            stopLossCell.textContent = trade.stopLoss;
+            row.appendChild(stopLossCell);
+
+            const takeProfitCell = document.createElement('td');
+            takeProfitCell.className = 'py-2 px-4 text-center';
+            takeProfitCell.textContent = trade.takeProfit;
+            row.appendChild(takeProfitCell);
+
+            const amountCell = document.createElement('td');
+            amountCell.className = 'py-2 px-4 text-center';
+            amountCell.textContent = trade.amount;
+            row.appendChild(amountCell);
+
+            const pnlCell = document.createElement('td');
+            pnlCell.className = 'py-2 px-4 text-center';
+            pnlCell.innerHTML = formatPnL(trade.percentageChange);
+            row.appendChild(pnlCell);
+
+            const platformCell = document.createElement('td');
+            platformCell.className = 'py-2 px-4 text-center';
+            platformCell.textContent = trade.platform;
+            row.appendChild(platformCell);
+
+            const statusCell = document.createElement('td');
+            statusCell.className = 'py-2 px-4 text-center';
+            statusCell.textContent = trade.status;
+            row.appendChild(statusCell);
+
+            const actionCell = document.createElement('td');
+            actionCell.className = 'py-2 px-4 text-center';
+
+            const viewButton = document.createElement('button');
+            viewButton.textContent = 'View';
+            Object.assign(viewButton.style, {
+                fontSize: '0.9rem',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                backgroundColor: '#333',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                margin: '4px 0',
+                minWidth: '80px',
+                textAlign: 'center',
+            });
+            viewButton.addEventListener('click', () => handleViewClick(trade));
+            actionCell.appendChild(viewButton);
+
+            if (trade.status !== 'Sold') {
+                if (trade.status === 'Completed') {
+                    const sellButton = document.createElement('button');
+                    sellButton.textContent = 'Sell';
+                    Object.assign(sellButton.style, {
+                        fontSize: '0.9rem',
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        backgroundColor: '#f56565',
+                        color: 'white',
+                        border: 'none',
+                        cursor: 'pointer',
+                        margin: '4px 0',
+                        minWidth: '80px',
+                        textAlign: 'center',
+                    });
+                    sellButton.addEventListener('click', () => handleSellClick(trade));
+                    actionCell.appendChild(sellButton);
+                } else {
+                    const retryButton = document.createElement('button');
+                    retryButton.textContent = 'Retry';
+                    Object.assign(retryButton.style, {
+                        fontSize: '0.9rem',
+                        padding: '6px 12px',
+                        borderRadius: '6px',
+                        backgroundColor: '#3182ce',
+                        color: 'white',
+                        border: 'none',
+                        cursor: 'pointer',
+                        margin: '4px 0',
+                        minWidth: '80px',
+                        textAlign: 'center',
+                    });
+                    retryButton.addEventListener('click', () => handleRetryClick(trade));
+                    actionCell.appendChild(retryButton);
+                }
+            }
+
+            row.appendChild(actionCell);
+            tradeList.appendChild(row);
+        });
+    };
+
+
+    const disableTakeProfitCheckbox = document.getElementById('disableTakeProfit');
+        const disableStopLossCheckbox = document.getElementById('disableStopLoss');
+        const takeProfitInput = document.getElementById('takeProfit');
+        const stopLossInput = document.getElementById('stopLoss');
+
+
+        const renderTradeDetails = async () => {
+    const tradeDetailsContent = document.getElementById('tradeDetailsContent');
+    const tradeChartCanvas = document.getElementById('tradeChartCanvas');
+  
+    // Debugging: log the platform value to verify
+    console.log('Selected Trade Platform:', selectedTrade.platform);
+
+    // Determine the correct URL and link text based on the platform
+    let pumpLikeUrl = '';
+    let pumpLikeText = '';
+    
+    if (selectedTrade.platform.toLowerCase() === 'pump') {
+        pumpLikeUrl = `https://pump.fun/coin/${selectedTrade.contractAddress}`;
+        pumpLikeText = 'Pump Url';
+    } else if (selectedTrade.platform.toLowerCase() === 'raydium') {
+        pumpLikeUrl = `https://dexscreener.com/solana/${selectedTrade.contractAddress}`;
+        pumpLikeText = 'Raydium Url';
+    }
+
+    // Dynamically load the chart into the canvas
+    tradeChartCanvas.innerHTML = `<iframe src="https://www.gmgn.cc/kline/sol/${selectedTrade.contractAddress}" frameborder="0" style="width: 100%; height: 100%; border-radius: 8px;"></iframe>`;
+
+    tradeDetailsContent.innerHTML = `
+        <p><strong>Trade ID:</strong> ${formatTradeId(selectedTrade.tradeId)}</p>
+        <p><strong>Platform:</strong> ${selectedTrade.platform}</p>
+        <p><strong>Active:</strong> ${selectedTrade.isSnipeActive ? 'Yes' : 'No'}</p>
+        <p><strong>Tokens Bought:</strong> ${selectedTrade.tokenBought}</p>
+        <p><strong>Buy Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.buyTx}" target="_blank">View Tx</a></p>
+        <p><strong>Sell Tx:</strong> <a href="https://solscan.io/tx/${selectedTrade.sellTx}" target="_blank">View Tx</a></p>
+        <p><strong>Status:</strong> ${selectedTrade.status}</p>
+        <p><strong>Blockchain:</strong> ${selectedTrade.blockchain}</p>
+        <p><strong>View on Platform:</strong> 
+            <a href="${pumpLikeUrl}" target="_blank">${pumpLikeText}</a>
+        </p>
+        <p><strong>Scan Token:</strong> 
+            <a href="https://rugcheck.xyz/tokens/${selectedTrade.contractAddress}" target="_blank">Scan Token</a>
+        </p>
+    `;
+
+    // Set the checkbox state based on isSnipeActive
+    disableTakeProfitCheckbox.checked = !selectedTrade.isTakeProfitActive;
+    disableStopLossCheckbox.checked = !selectedTrade.isStopLossActive;
+
+    // Populate the input fields with the current values
+    takeProfitInput.value = selectedTrade.takeProfit;
+    stopLossInput.value = selectedTrade.stopLoss;
+};
+
+
+    // Function to update trade details
+    const updateTrade = async (config) => {
+            if (!selectedTrade) {
+                showError('No trade selected for update.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BASE_URL}/users/update-trade-by-ids/${selectedTrade.tradeId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                const data = await response.json();
+                console.log('Update Trade Response:', data); // Log the API response
+
+                if (response.ok) {
+                    alert('Trade updated successfully!'); // Show success alert
+                    fetchTrades(); // Refresh trades after update
+                } else {
+                    showError(data.message || 'Failed to update trade');
+                }
+            } catch (error) {
+                console.error('Error updating trade:', error);
+                showError('Failed to update trade. Please try again.');
+            }
+        };
 
         // Event listener for updating trade details
         document.getElementById('confirmUpdateTrade').addEventListener('click', async () => {
             const takeProfit = document.getElementById('takeProfit').value;
             const stopLoss = document.getElementById('stopLoss').value;
+
+            if (!selectedTrade) {
+                showError('No trade selected for update.');
+                return;
+            }
+
+            const config = {
+                takeProfit: parseFloat(takeProfit),
+                stopLoss: parseFloat(stopLoss)
+            };
+
+            await updateTrade(config);
+        });
+
+        // Event listener for updating trade details
+        document.getElementById('confirmUpdateTrade').addEventListener('click', async () => {
+            const takeProfit = takeProfitInput.value;
+            const stopLoss = stopLossInput.value;
 
             if (!selectedTrade) {
                 showError('No trade selected for update.');
@@ -1096,18 +1161,197 @@ const fetchTrades = async () => {
                 console.error('Error updating trade:', error);
                 showError('Failed to update trade. Please try again.');
             } finally {
-                hideModal('viewTradeModal');
+                // hideModal('viewTradeModal');
             }
         });
 
-        // Fetch trades on page load
-        fetchTrades();
 
-        // Set interval to fetch trades every 10 seconds
-        tradeFetchInterval = setInterval(fetchTrades, 3000);
+    const fetchTrades = async () => {
+                try {
+                    const telegramId = getCookieValue('telegramId');
+                    const response = await fetch(`${BASE_URL}/fetchTrades/${telegramId}`);
+                    const data = await response.json();
+                    trades = data.trades;
+                    renderTrades();
+                } catch (err) {
+                    console.error('Error fetching trades:', err);
+                    showError('Failed to fetch trades. Please try again later.');
+                }
+            };
 
-    });
+            const setFilterStatus = (status) => {
+                filterStatus = status;
+                renderTrades();
+            };
 
-    </script>
-</body>
-</html>
+            const setFilterPlatform = (platform) => {
+                filterPlatform = platform;
+                renderTrades();
+            };
+
+            const setSelectedSellPercentage = (percentage) => {
+                selectedSellPercentage = percentage;
+            };
+
+            const setManualAmount = (amount) => {
+                manualAmount = amount;
+            };
+
+            const setManualSlippage = (slippage) => {
+                manualSlippage = slippage;
+            };
+
+            const setManualTipMiner = (tipMiner) => {
+                manualTipMiner = tipMiner;
+            };
+
+            const setTipAmount = (amount) => {
+                tipAmount = amount;
+            };
+
+            const setSlippage = (slippageValue) => {
+                slippage = slippageValue;
+            };
+
+            const setIsLoading = (loading) => {
+                isLoading = loading;
+                if (loading) {
+                    showLoading();
+                } else {
+                    hideLoading();
+                }
+            };
+
+            const setSellTrade = (trade) => {
+                sellTrade = trade;
+                if (trade) {
+                    showModal('sellModal');
+                } else {
+                    hideModal('sellModal');
+                }
+            };
+
+            const setRetryTrade = (trade) => {
+                retryTrade = trade;
+                if (trade) {
+                    showModal('retryModal');
+                } else {
+                    hideModal('retryModal');
+                }
+            };
+
+            const showModal = (modalId) => {
+                const modal = document.getElementById(modalId);
+                modal.style.display = 'flex';
+                pauseTradeFetching(); // Pause fetching when a modal is opened
+            };
+
+            const resetModal = () => {
+    const modalContent = document.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.innerHTML = ''; // Clear the content of the modal
+    }
+    selectedTrade = null; // Reset the selected trade
+};
+
+             const hideModal = (modalId) => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+            resetModal(); // Call resetModal to clear the modal content and reset selectedTrade
+        }
+        resumeTradeFetching(); // Resume fetching trades after the modal is closed
+    };
+
+            const pauseTradeFetching = () => {
+                clearInterval(tradeFetchInterval);
+            };
+
+            const resumeTradeFetching = () => {
+                tradeFetchInterval = setInterval(fetchTrades, 10000);
+            };
+
+            const showLoading = () => {
+                document.getElementById('loadingOverlay').style.display = 'flex';
+            };
+
+            const hideLoading = () => {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            };
+
+            const showSuccess = () => {
+                document.getElementById('successOverlay').style.display = 'flex';
+                setTimeout(() => {
+                    document.getElementById('successOverlay').style.display = 'none';
+                }, 3000);
+            };
+
+            // Event listeners for filters
+            document.getElementById('statusFilter').addEventListener('change', (e) => setFilterStatus(e.target.value));
+            document.getElementById('platformFilter').addEventListener('change', (e) => setFilterPlatform(e.target.value));
+
+            // Event listeners for modal close buttons
+            document.getElementById('closeSellModal').addEventListener('click', () => hideModal('sellModal'));
+            document.getElementById('closeUpdateStatusModal').addEventListener('click', () => hideModal('updateStatusModal'));
+            document.getElementById('closeViewTradeModal').addEventListener('click', () => hideModal('viewTradeModal'));
+
+            // Event listeners for modal confirm buttons
+            document.getElementById('confirmSell').addEventListener('click', async () => {
+                await handleSellTransaction();
+            });
+
+            document.getElementById('confirmUpdateStatus').addEventListener('click', async () => {
+                await handleUpdateStatusTransaction();
+            });
+
+         // Event listener for updating trade details
+         document.getElementById('confirmUpdateTrade').addEventListener('click', async () => {
+                const takeProfit = takeProfitInput.value;
+                const stopLoss = stopLossInput.value;
+
+                if (!selectedTrade) {
+                    showError('No trade selected for update.');
+                    return;
+                }
+
+                const config = {
+                    takeProfit: parseFloat(takeProfit),
+                    stopLoss: parseFloat(stopLoss),
+                    isTakeProfitActive: !disableTakeProfitCheckbox.checked,
+                    isStopLossActive: !disableStopLossCheckbox.checked
+                };
+
+                await updateTrade(config);
+            });
+
+            // Event listener for disabling/enabling stop loss
+            disableStopLossCheckbox.addEventListener('change', async () => {
+                const config = {
+                    isStopLossActive: !disableStopLossCheckbox.checked
+                };
+
+                await updateTrade(config);
+            });
+
+            // Event listener for disabling/enabling take profit
+            disableTakeProfitCheckbox.addEventListener('change', async () => {
+                const config = {
+                    isTakeProfitActive: !disableTakeProfitCheckbox.checked
+                };
+
+                await updateTrade(config);
+            });
+
+           
+            // Fetch trades on page load
+            fetchTrades();
+            // Set interval to fetch trades every 10 seconds
+            tradeFetchInterval = setInterval(fetchTrades, 3000);
+
+        });
+
+        </script>
+
+
+    </body>
+    </html>

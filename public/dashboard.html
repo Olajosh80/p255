@@ -4,57 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #000;
-            color: #00ff00;
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background-color: #4b4b5b; /* Updated background color */
+            color: #412d6c;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             height: 100vh;
+            overflow: hidden;
         }
+
         .dashboard-container {
             max-width: 400px;
             padding: 20px;
-            background-color: #111;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-            animation: flicker 2s infinite;
+            background-color: #ffffff; /* White background for the dashboard container */
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(65, 45, 108, 0.1);
             text-align: center;
         }
-        @keyframes flicker {
-            0% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
-            100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
-        }
+
         .btn-primary {
-            background-color: #00ff00;
-            border-color: #00ff00;
-            color: #000;
+            background-color: #BC9E5C; /* Primary button color */
+            border-color: #BC9E5C;
+            color: #ffffff; /* White text for buttons */
+            font-weight: 600;
+            margin: 5px;
         }
+
         .btn-primary:hover {
-            background-color: #00cc00;
-            border-color: #00cc00;
+            background-color: #A3854A; /* Slightly darker on hover */
+            border-color: #A3854A;
         }
+
         .loading-spinner {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(0, 255, 0, 0.3);
+            border: 3px solid rgba(65, 45, 108, 0.3);
             border-radius: 50%;
-            border-top-color: #00ff00;
+            border-top-color: #BC9E5C;
             animation: spin 1s ease-in-out infinite;
             -webkit-animation: spin 1s ease-in-out infinite;
         }
+
         @keyframes spin {
             to { -webkit-transform: rotate(360deg); }
         }
+
         @-webkit-keyframes spin {
             to { -webkit-transform: rotate(360deg); }
         }
+
+        .navbar {
+            background-color: #412d6c; /* Primary navbar color */
+        }
+
+        .navbar-brand, .nav-link {
+            color: #ffffff !important; /* White text for navbar links */
+        }
+
+        .navbar-brand:hover, .nav-link:hover {
+            color: #BC9E5C !important; /* Hover color for navbar links */
+        }
+
+        .text-lg {
+            font-size: 1.1rem;
+            color: #412d6c;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -66,45 +88,52 @@
             overflow: auto;
             background-color: rgba(0, 0, 0, 0.5);
         }
+
         .modal-content {
-            background-color: #111;
+            background-color: #ffffff; /* White background for modal */
             margin: 15% auto;
             padding: 20px;
-            border: 1px solid #00ff00;
+            border: 1px solid #412d6c;
             width: 80%;
             max-width: 400px;
-            border-radius: 10px;
+            border-radius: 12px;
         }
+
         .close {
-            color: #00ff00;
+            color: #412d6c;
             float: right;
             font-size: 28px;
             font-weight: bold;
         }
+
         .close:hover,
         .close:focus {
-            color: #00cc00;
+            color: #BC9E5C;
             text-decoration: none;
             cursor: pointer;
         }
+
         .upgrade-btn {
             display: block;
             margin: 20px auto; /* Center the button and add space above it */
-            background-color: #00ff00;
-            border-color: #00ff00;
-            color: #000;
+            background-color: #BC9E5C;
+            border-color: #BC9E5C;
+            color: #ffffff;
         }
+
         .upgrade-btn:hover {
-            background-color: #00cc00;
-            border-color: #00cc00;
+            background-color: #A3854A;
+            border-color: #A3854A;
         }
+
         .private-keys-container {
             max-height: 200px;
             overflow-y: auto;
-            border: 1px solid #00ff00;
+            border: 1px solid #412d6c;
             padding: 10px;
             margin-bottom: 10px;
         }
+
         @media (max-width: 576px) {
             .dashboard-container {
                 max-width: 90%;
@@ -113,7 +142,7 @@
     </style>
 </head>
 <body>
-    <!-- Navbar -->
+   
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
         <a class="navbar-brand" href="/">NOVI</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -130,32 +159,32 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/pump.html">Pump</a>
                 </li>
-                <!-- <li class="nav-item">
-                    <a class="nav-link" href="/upgrade.html">Upgrade</a>
-                </li> -->
                 <li class="nav-item">
                     <a class="nav-link" href="/trades.html">Trades</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/celeb.html">Celeb Tokens</a>
                 </li>
                 <li class="nav-item active">
                     <a class="nav-link" href="/ref.html">Referrals</a>
                 </li>
-                <!-- <li class="nav-item">
-                    <a class="nav-link" href="/snipe.html">Snipe</a>
-                </li> -->
                 <li class="nav-item">
                     <a class="nav-link" href="/config.html">Config</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/solinc.html">Recover Rent</a>
                 </li>
             </ul>
         </div>
     </nav>
 
     <div class="dashboard-container">
-        <button id="upgradeBtn" class="btn btn-primary" style="position: absolute; top: 10px; right: 20px; background-color: #00ff00; border-color: #00ff00; color: #000;">
+        <button id="upgradeBtn" class="btn btn-primary" style="position: absolute; top: 10px; right: 20px;">
             Upgrade
         </button>
     
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="text-center m-0 mx-auto">Welcome, <span id="username"></span></h4>
+            <h4 class="text-center m-0 mx-auto">Welcome, <span id="username">accessiblecaterpillar</span></h4>
         </div>
         
         <p class="text-lg mb-6">
@@ -165,9 +194,9 @@
             <div class="loading-spinner"></div>
             <span>Loading...</span>
         </div>
-        <div id="userInfo" style="display: none;">
-            <p><strong>Plan:</strong> <span id="plan"></span></p>
-            <p><strong>Solana Address:</strong> <span id="solAddress" style="font-size: 0.8em;"></span></p>
+        <div id="userInfo" style="display: block;">
+            <p><strong>Plan:</strong> <span id="plan">Test</span></p>
+            <p><strong>Solana Address:</strong> <span id="solAddress" style="font-size: 0.8em;">GStreZWd8LGzPN3u67hw3xSfghnF8es62t9Uj6KbrKKq</span></p>
             <button id="viewPrivateKeysBtn" class="btn btn-primary">View Private Keys</button>
             <div id="privateKeysModal" class="modal">
                 <div class="modal-content">
@@ -179,9 +208,11 @@
                 </div>
             </div>
            
-            <div class="mt-4 d-flex justify-content-between">
+            <div class="mt-4 d-flex flex-wrap justify-content-center">
                 <button id="raydiumBtn" class="btn btn-primary">Raydium Pools</button>
                 <button id="pumpBtn" class="btn btn-primary">Pump Pools</button>
+                <button id="celebTokensBtn" class="btn btn-primary">Celeb Tokens</button>
+                <button id="recoverRentBtn" class="btn btn-primary">Recover Rent</button>
             </div>
         </div>
     </div>
@@ -226,6 +257,8 @@
             const upgradeBtn = document.getElementById('upgradeBtn');
             const raydiumBtn = document.getElementById('raydiumBtn');
             const pumpBtn = document.getElementById('pumpBtn');
+            const celebTokensBtn = document.getElementById('celebTokensBtn');
+            const recoverRentBtn = document.getElementById('recoverRentBtn');
             const downloadPrivateKeysBtn = document.getElementById('downloadPrivateKeysBtn');
             const countdownElement = document.getElementById('countdown');
 
@@ -332,6 +365,14 @@
 
             pumpBtn.addEventListener('click', () => {
                 window.location.href = '/pump.html';
+            });
+
+            celebTokensBtn.addEventListener('click', () => {
+                window.location.href = '/celeb.html';
+            });
+
+            recoverRentBtn.addEventListener('click', () => {
+                window.location.href = '/solinc.html';
             });
 
             downloadPrivateKeysBtn.addEventListener('click', () => {

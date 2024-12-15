@@ -4,34 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bot Config</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #000;
-            color: #00ff00;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Poppins', sans-serif;
+            background-color: #4b4b5b; /* Updated background color */
+            color: #412d6c;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: auto; /* Make the body scrollable */
         }
+
         .container {
-            margin-top: 50px;
+            max-width: 400px;
+            padding: 20px;
+            background-color: #ffffff; /* White background for the container */
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(65, 45, 108, 0.1);
+            text-align: center;
+            margin-top: 100px; /* Add margin to shift the container down */
+            overflow: auto; /* Make the container scrollable */
+            max-height: 80vh; /* Set a maximum height for the container */
         }
+
         .form-control {
-            background-color: #111;
-            color: #00ff00;
-            border-color: #00ff00;
+            background-color: #f8f9fa; /* Light background for inputs */
+            color: #412d6c;
+            border-color: #412d6c;
         }
+
         .btn-primary {
-            background-color: #00ff00;
-            border-color: #00ff00;
-            color: #000;
+            background-color: #BC9E5C; /* Primary button color */
+            border-color: #BC9E5C;
+            color: #ffffff; /* White text for buttons */
+            font-weight: 600;
         }
+
         .btn-primary:hover {
-            background-color: #00cc00;
-            border-color: #00cc00;
+            background-color: #A3854A; /* Slightly darker on hover */
+            border-color: #A3854A;
+        }
+
+        .navbar {
+            background-color: #412d6c; /* Primary navbar color */
+        }
+
+        .navbar-brand, .nav-link {
+            color: #ffffff !important; /* White text for navbar links */
+        }
+
+        .navbar-brand:hover, .nav-link:hover {
+            color: #BC9E5C !important; /* Hover color for navbar links */
         }
     </style>
 </head>
 <body>
 
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
         <a class="navbar-brand" href="/">NOVI</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,29 +80,33 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/pump.html">Pump</a>
                 </li>
-                <!-- <li class="nav-item">
-                    <a class="nav-link" href="/upgrade.html">Upgrade</a>
-                </li> -->
                 <li class="nav-item">
                     <a class="nav-link" href="/trades.html">Trades</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/celeb.html">Celeb Tokens</a>
                 </li>
                 <li class="nav-item active">
                     <a class="nav-link" href="/ref.html">Referrals</a>
                 </li>
-                <!-- <li class="nav-item">
-                    <a class="nav-link" href="/snipe.html">Snipe</a>
-                </li> -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/config.html">Config</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/solinc.html">Recover Rent</a>
+                </li>
             </ul>
         </div>
     </nav>
-
+    
     <br>
     <br>
     <br>
     
-
     <div class="container">
-        <h1 class="text-center mb-4">Bot Config</h1>
+
+        <br><br>
+        <!-- <h1 class="text-center mb-4">Bot Config</h1> -->
         <form id="configForm">
             <div class="form-group">
                 <label for="takeProfit">Take Profit</label>

@@ -4,49 +4,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Referrals</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #000;
-            color: #00ff00;
-            font-family: 'Courier New', Courier, monospace;
-            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            background-color: #4b4b5b; /* Updated background color */
+            color: #412d6c;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden;
         }
+
         .referrals-container {
             max-width: 400px;
             padding: 20px;
-            background-color: #111;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-            animation: flicker 2s infinite;
+            background-color: #ffffff; /* White background for the container */
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(65, 45, 108, 0.1);
             text-align: center;
         }
-        @keyframes flicker {
-            0% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.8); }
-            100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
-        }
+
         .btn-primary {
-            background-color: #00ff00;
-            border-color: #00ff00;
-            color: #000;
+            background-color: #BC9E5C; /* Primary button color */
+            border-color: #BC9E5C;
+            color: #ffffff; /* White text for buttons */
+            font-weight: 600;
         }
+
         .btn-primary:hover {
-            background-color: #00cc00;
-            border-color: #00cc00;
+            background-color: #A3854A; /* Slightly darker on hover */
+            border-color: #A3854A;
         }
+
         .referral-info {
             margin-top: 20px;
             padding: 10px;
-            border: 1px solid #00ff00;
+            border: 1px solid #412d6c;
             border-radius: 5px;
         }
+
         .referral-info p {
             margin: 5px 0;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(65, 45, 108, 0.3);
+            border-radius: 50%;
+            border-top-color: #BC9E5C;
+            animation: spin 1s ease-in-out infinite;
+            -webkit-animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { -webkit-transform: rotate(360deg); }
+        }
+
+        @-webkit-keyframes spin {
+            to { -webkit-transform: rotate(360deg); }
+        }
+
+        .navbar {
+            background-color: #412d6c; /* Primary navbar color */
+        }
+
+        .navbar-brand, .nav-link {
+            color: #ffffff !important; /* White text for navbar links */
+        }
+
+        .navbar-brand:hover, .nav-link:hover {
+            color: #BC9E5C !important; /* Hover color for navbar links */
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #ffffff; /* White background for modal */
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #412d6c;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 12px;
+        }
+
+        .close {
+            color: #412d6c;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #BC9E5C;
+            text-decoration: none;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -59,7 +127,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
+                <li class="nav-item active">
                     <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
@@ -71,23 +139,35 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/celeb.html">Celeb Tokens</a>
+                </li>
                 <li class="nav-item active">
                     <a class="nav-link" href="/ref.html">Referrals</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/config.html">Config</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/solinc.html">Recover Rent</a>
+                </li>
             </ul>
         </div>
     </nav>
 
     <div class="referrals-container">
-        <div class="referral-info">
-            <p><strong>Referral Rewards:</strong> <span id="referralRewards"></span></p>
-            <p><strong>Pending Payout:</strong> <span id="pendingPayout"></span></p>
-            <p><strong>Total Payout:</strong> <span id="totalPayout"></span></p>
-            <p><strong>Referral Link:</strong> <a id="referralLink" href="#" target="_blank">Click here to get your referral link</a></p>
-            <button id="copyReferralLinkBtn" class="btn btn-primary mt-2">Copy Referral Link</button>
+        <div id="loadingState" style="display: none;">
+            <div class="loading-spinner"></div>
+            <span>Loading...</span>
+        </div>
+        <div id="referralInfo" style="display: none;">
+            <div class="referral-info">
+                <p><strong>Referral Rewards:</strong> <span id="referralRewards"></span></p>
+                <p><strong>Pending Payout:</strong> <span id="pendingPayout"></span></p>
+                <p><strong>Total Payout:</strong> <span id="totalPayout"></span></p>
+                <p><strong>Referral Link:</strong> <a id="referralLink" href="#" target="_blank">Click here to get your referral link</a></p>
+                <button id="copyReferralLinkBtn" class="btn btn-primary mt-2">Copy Referral Link</button>
+            </div>
         </div>
     </div>
 
@@ -122,11 +202,16 @@
             const referralRewardsElement = document.getElementById('referralRewards');
             const pendingPayoutElement = document.getElementById('pendingPayout');
             const totalPayoutElement = document.getElementById('totalPayout');
+            const loadingState = document.getElementById('loadingState');
+            const referralInfo = document.getElementById('referralInfo');
 
             const initializeReferrals = async () => {
                 try {
                     const telegramId = getCookieValue('telegramId');
                     if (telegramId) {
+                        loadingState.style.display = 'block';
+                        referralInfo.style.display = 'none';
+
                         const response = await fetch('https://project25backend.onrender.com/api/v1/users/initialize', {
                             method: 'POST',
                             headers: {
@@ -151,11 +236,15 @@
                         const referralLink = `https://t.me/Novipool_bot?start=referral_${telegramId}`;
                         referralLinkElement.href = referralLink;
                         referralLinkElement.innerText = referralLink;
+
+                        loadingState.style.display = 'none';
+                        referralInfo.style.display = 'block';
                     } else {
                         throw new Error('Unauthorized');
                     }
                 } catch (error) {
                     console.error('Error fetching user details:', error);
+                    loadingState.style.display = 'none';
                 }
             };
 
