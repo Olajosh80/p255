@@ -225,6 +225,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- Navbar -->
@@ -263,7 +264,6 @@
         </div>
     </nav>
 
-    
     <div class="tv-screen">
         <h2 class="text-center mb-4">Pump Pools</h2>
         <a href="/pumpgems.html">
@@ -308,251 +308,250 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-    const getCookieValue = (name) => {
-        if (typeof document === 'undefined') {
-            return null;
-        }
-        const cookies = document.cookie.split(';');
-        const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
-        return cookie ? cookie.split('=')[1] : null;
-    };
-
-    const checkAuth = () => {
-        const token = getCookieValue('token');
-        const telegramId = getCookieValue('telegramId');
-
-        if (!token || token === 'false' || !telegramId) {
-            window.location.href = '/';
-            return false;
-        }
-        return true;
-    };
-
-    if (!checkAuth()) {
-        return;
-    }
-
-    const tokenListElement = document.getElementById('tokenList');
-    const loadingState = document.getElementById('loadingState');
-    const prevPageButton = document.getElementById('prevPage');
-    const nextPageButton = document.getElementById('nextPage');
-
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    const successOverlay = document.getElementById('successOverlay');
-    const errorOverlay = document.getElementById('errorOverlay');
-    const errorMessageText = document.getElementById('errorMessageText');
-
-    let existingTokens = []; // Array to store existing tokens
-    let currentPage = 1; // Current page number
-    const tokensPerPage = 100; // Number of tokens per page
-
-    // Cache key for storing tokens in localStorage
-    const TOKEN_CACHE_KEY = 'pumpTokensCache';
-    const CACHE_EXPIRY_KEY = 'pumpTokensCacheExpiry';
-    const CACHE_EXPIRY_TIME = 10 * 60 * 1000; // 10 minutes in milliseconds
-
-    // Load tokens from cache if available and not expired
-    const loadTokensFromCache = () => {
-        const cachedTokens = localStorage.getItem(TOKEN_CACHE_KEY);
-        const cacheExpiry = localStorage.getItem(CACHE_EXPIRY_KEY);
-
-        if (cachedTokens && cacheExpiry) {
-            const now = new Date().getTime();
-            if (now < parseInt(cacheExpiry, 10)) {
-                existingTokens = JSON.parse(cachedTokens);
-                renderTokens([]); // Render tokens from cache
-                console.log('Loaded tokens from cache.');
-                return true;
-            } else {
-                // Cache expired, clear it
-                localStorage.removeItem(TOKEN_CACHE_KEY);
-                localStorage.removeItem(CACHE_EXPIRY_KEY);
-                console.log('Cache expired, cleared cache.');
+        const getCookieValue = (name) => {
+            if (typeof document === 'undefined') {
+                return null;
             }
+            const cookies = document.cookie.split(';');
+            const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
+            return cookie ? cookie.split('=')[1] : null;
+        };
+
+        const checkAuth = () => {
+            const token = getCookieValue('token');
+            const telegramId = getCookieValue('telegramId');
+
+            if (!token || token === 'false' || !telegramId) {
+                window.location.href = '/';
+                return false;
+            }
+            return true;
+        };
+
+        if (!checkAuth()) {
+            return;
         }
-        return false;
-    };
 
-    // Save tokens to cache with an expiry timestamp
-    const saveTokensToCache = (tokens) => {
-        const now = new Date().getTime();
-        const expiryTime = now + CACHE_EXPIRY_TIME;
+        const tokenListElement = document.getElementById('tokenList');
+        const loadingState = document.getElementById('loadingState');
+        const prevPageButton = document.getElementById('prevPage');
+        const nextPageButton = document.getElementById('nextPage');
 
-        localStorage.setItem(TOKEN_CACHE_KEY, JSON.stringify(tokens));
-        localStorage.setItem(CACHE_EXPIRY_KEY, expiryTime.toString());
-        console.log('Saved tokens to cache.');
-    };
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const successOverlay = document.getElementById('successOverlay');
+        const errorOverlay = document.getElementById('errorOverlay');
+        const errorMessageText = document.getElementById('errorMessageText');
 
-    const formatTimeDifference = (timestamp) => {
-        const timeDifference = Math.floor((new Date() - new Date(timestamp)) / 1000);
-        if (timeDifference < 60) return `${timeDifference} seconds ago`;
-        if (timeDifference < 3600) return `${Math.floor(timeDifference / 60)} minutes ago`;
-        if (timeDifference < 86400) return `${Math.floor(timeDifference / 3600)} hours ago`;
-        if (timeDifference < 604800) return `${Math.floor(timeDifference / 86400)} days ago`;
-        if (timeDifference < 2419200) return `${Math.floor(timeDifference / 604800)} weeks ago`;
-        if (timeDifference < 29030400) return `${Math.floor(timeDifference / 2419200)} months ago`;
-        return `${Math.floor(timeDifference / 29030400)} years ago`;
-    };
+        let existingTokens = []; // Array to store existing tokens
+        let currentPage = 1; // Current page number
+        const tokensPerPage = 100; // Number of tokens per page
 
-    const renderTokens = (tokens) => {
-        // Save the current scroll position
-        const currentScrollPosition = window.scrollY;
+        // Cache key for storing tokens in localStorage
+        const TOKEN_CACHE_KEY = 'pumpTokensCache';
+        const CACHE_EXPIRY_KEY = 'pumpTokensCacheExpiry';
+        const CACHE_EXPIRY_TIME = 10 * 60 * 1000; // 10 minutes in milliseconds
 
-        const now = new Date();
+        // Load tokens from cache if available and not expired
+        const loadTokensFromCache = () => {
+            const cachedTokens = localStorage.getItem(TOKEN_CACHE_KEY);
+            const cacheExpiry = localStorage.getItem(CACHE_EXPIRY_KEY);
 
-        // Sort tokens by timestamp in descending order (latest token first)
-        tokens.sort((a, b) => b.fetchedAt - a.fetchedAt);
+            if (cachedTokens && cacheExpiry) {
+                const now = new Date().getTime();
+                if (now < parseInt(cacheExpiry, 10)) {
+                    existingTokens = JSON.parse(cachedTokens);
+                    renderTokens([]); // Render tokens from cache
+                    console.log('Loaded tokens from cache.');
+                    return true;
+                } else {
+                    // Cache expired, clear it
+                    localStorage.removeItem(TOKEN_CACHE_KEY);
+                    localStorage.removeItem(CACHE_EXPIRY_KEY);
+                    console.log('Cache expired, cleared cache.');
+                }
+            }
+            return false;
+        };
 
-        // Append new tokens to the top of the existing tokens array
-        existingTokens = [...tokens.map(token => ({ ...token, fetchedAt: now })), ...existingTokens];
+        // Save tokens to cache with an expiry timestamp
+        const saveTokensToCache = (tokens) => {
+            const now = new Date().getTime();
+            const expiryTime = now + CACHE_EXPIRY_TIME;
 
-        // Clear the current list
-        tokenListElement.innerHTML = '';
+            localStorage.setItem(TOKEN_CACHE_KEY, JSON.stringify(tokens));
+            localStorage.setItem(CACHE_EXPIRY_KEY, expiryTime.toString());
+            console.log('Saved tokens to cache.');
+        };
 
-        const startIndex = (currentPage - 1) * tokensPerPage;
-        const endIndex = startIndex + tokensPerPage;
-        const tokensToDisplay = existingTokens.slice(startIndex, endIndex);
+        const formatTimeDifference = (timestamp) => {
+            const timeDifference = Math.floor((new Date() - new Date(timestamp)) / 1000);
+            if (timeDifference < 60) return `${timeDifference} seconds ago`;
+            if (timeDifference < 3600) return `${Math.floor(timeDifference / 60)} minutes ago`;
+            if (timeDifference < 86400) return `${Math.floor(timeDifference / 3600)} hours ago`;
+            if (timeDifference < 604800) return `${Math.floor(timeDifference / 86400)} days ago`;
+            if (timeDifference < 2419200) return `${Math.floor(timeDifference / 604800)} weeks ago`;
+            if (timeDifference < 29030400) return `${Math.floor(timeDifference / 2419200)} months ago`;
+            return `${Math.floor(timeDifference / 29030400)} years ago`;
+        };
 
-        tokensToDisplay.forEach((token, index) => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <div>Name: ${token.name}</div>
-                <div>Base Address: ${token.mint}</div>
-                <div>Status: Tradable</div>
-                <div>Timestamp: ${formatTimeDifference(token.fetchedAt)}</div>
-                <div>Tokens Pooled: ${token.vTokensInBondingCurve}</div>
-                <div>SOL Pooled: ${token.vSolInBondingCurve}</div>
-            `;
+        const renderTokens = (tokens) => {
+            // Save the current scroll position
+            const currentScrollPosition = window.scrollY;
 
-            // Add Buy button
-            const button = document.createElement('button');
-            button.className = 'mt-2 btn btn-buy';
-            button.textContent = 'Buy';
-            button.setAttribute('data-token', JSON.stringify(token));
-            button.addEventListener('click', () => {
-                const token = JSON.parse(button.getAttribute('data-token'));
-                handleBuyToken(token);
+            const now = new Date();
+
+            // Sort tokens by timestamp in descending order (latest token first)
+            tokens.sort((a, b) => b.timestamp - a.timestamp);
+
+            // Append new tokens to the top of the existing tokens array
+            existingTokens = [...tokens.map(token => ({ ...token.data, fetchedAt: now })), ...existingTokens];
+
+            // Clear the current list
+            tokenListElement.innerHTML = '';
+
+            const startIndex = (currentPage - 1) * tokensPerPage;
+            const endIndex = startIndex + tokensPerPage;
+            const tokensToDisplay = existingTokens.slice(startIndex, endIndex);
+
+            tokensToDisplay.forEach((token, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div>Name: ${token.name}</div>
+                    <div>Base Address: ${token.mint}</div>
+                    <div>Status: Tradable</div>
+                    <div>Timestamp: ${formatTimeDifference(token.fetchedAt)}</div>
+                    <div>Tokens Pooled: ${token.vTokensInBondingCurve}</div>
+                    <div>SOL Pooled: ${token.vSolInBondingCurve}</div>
+                `;
+
+                // Add Buy button
+                const button = document.createElement('button');
+                button.className = 'mt-2 btn btn-buy';
+                button.textContent = 'Buy';
+                button.setAttribute('data-token', JSON.stringify(token));
+                button.addEventListener('click', () => {
+                    const token = JSON.parse(button.getAttribute('data-token'));
+                    handleBuyToken(token);
+                });
+                li.appendChild(button);
+
+                tokenListElement.appendChild(li); // Append each token to the list
             });
-            li.appendChild(button);
 
-            tokenListElement.appendChild(li); // Append each token to the list
+            // Update pagination controls
+            prevPageButton.disabled = currentPage === 1;
+            nextPageButton.disabled = endIndex >= existingTokens.length;
+
+            // Restore the scroll position after rendering all tokens
+            window.scrollTo(0, currentScrollPosition);
+        };
+
+        // Establish WebSocket connection
+        const socket = new WebSocket('wss://project25backend.onrender.com/pump');
+
+        socket.onopen = () => {
+            console.log('WebSocket connection established.');
+        };
+
+        socket.onmessage = (event) => {
+            const tokens = JSON.parse(event.data);
+            renderTokens(tokens);
+            saveTokensToCache(existingTokens); // Save tokens to cache
+        };
+
+        socket.onclose = () => {
+            console.log('WebSocket connection closed.');
+        };
+
+        socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        const showLoading = () => {
+            loadingOverlay.style.display = 'flex';
+        };
+
+        const hideLoading = () => {
+            loadingOverlay.style.display = 'none';
+        };
+
+        const showSuccess = () => {
+            successOverlay.style.display = 'flex';
+            setTimeout(() => {
+                successOverlay.style.display = 'none';
+            }, 3000);
+        };
+
+        const showError = (message) => {
+            errorMessageText.textContent = message;
+            errorOverlay.style.display = 'flex';
+            setTimeout(() => {
+                errorOverlay.style.display = 'none';
+            }, 3000);
+        };
+
+        const handleBuyToken = async (token) => {
+            // Check if the token object is valid and has the mint property
+            if (!token || !token.mint) {
+                console.error('Invalid token object:', token);
+                showError('Invalid token data. Please try again.');
+                return;
+            }
+
+            const telegramId = getCookieValue('telegramId');
+            const outputMint = token.mint; // Directly access the mint property
+            const inputMint = 'So11111111111111111111111111111111111111112';
+
+            showLoading();
+
+            try {
+                const response = await fetch('https://project25backend.onrender.com/api/v1/trade/pump-buy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        inputMint,
+                        outputMint,
+                        telegramId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess();
+                } else {
+                    showError(data.message || 'Transaction failed');
+                }
+            } catch (error) {
+                console.error('Error submitting buy transaction:', error);
+                showError('An error occurred. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        prevPageButton.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTokens([]);
+            }
         });
 
-        // Update pagination controls
-        prevPageButton.disabled = currentPage === 1;
-        nextPageButton.disabled = endIndex >= existingTokens.length;
-
-        // Restore the scroll position after rendering all tokens
-        window.scrollTo(0, currentScrollPosition);
-    };
-
-    // Establish WebSocket connection
-    const socket = new WebSocket('wss://project25backend.onrender.com/pump');
-
-    socket.onopen = () => {
-        console.log('WebSocket connection established.');
-    };
-
-    socket.onmessage = (event) => {
-        const tokens = JSON.parse(event.data);
-        renderTokens(tokens);
-        saveTokensToCache(existingTokens); // Save tokens to cache
-    };
-
-    socket.onclose = () => {
-        console.log('WebSocket connection closed.');
-    };
-
-    socket.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
-
-    const showLoading = () => {
-        loadingOverlay.style.display = 'flex';
-    };
-
-    const hideLoading = () => {
-        loadingOverlay.style.display = 'none';
-    };
-
-    const showSuccess = () => {
-        successOverlay.style.display = 'flex';
-        setTimeout(() => {
-            successOverlay.style.display = 'none';
-        }, 3000);
-    };
-
-    const showError = (message) => {
-        errorMessageText.textContent = message;
-        errorOverlay.style.display = 'flex';
-        setTimeout(() => {
-            errorOverlay.style.display = 'none';
-        }, 3000);
-    };
-
-
-    const handleBuyToken = async (token) => {
-    // Check if the token object is valid and has the mint property
-    if (!token || !token.mint) {
-        console.error('Invalid token object:', token);
-        showError('Invalid token data. Please try again.');
-        return;
-    }
-
-    const telegramId = getCookieValue('telegramId');
-    const outputMint = token.mint; // Directly access the mint property
-    const inputMint = 'So11111111111111111111111111111111111111112';
-
-    showLoading();
-
-    try {
-        const response = await fetch('https://project25backend.onrender.com/api/v1/trade/pump-buy', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                inputMint,
-                outputMint,
-                telegramId
-            })
+        nextPageButton.addEventListener('click', () => {
+            const totalPages = Math.ceil(existingTokens.length / tokensPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTokens([]);
+            }
         });
 
-        const data = await response.json();
-
-        if (response.ok) {
-            showSuccess();
-        } else {
-            showError(data.message || 'Transaction failed');
-        }
-    } catch (error) {
-        console.error('Error submitting buy transaction:', error);
-        showError('An error occurred. Please try again.');
-    } finally {
-        hideLoading();
-    }
-};
-
-    prevPageButton.addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            renderTokens([]);
+        // Load tokens from cache on page load
+        if (!loadTokensFromCache()) {
+            console.log('No valid cache found, waiting for WebSocket data.');
         }
     });
-
-    nextPageButton.addEventListener('click', () => {
-        const totalPages = Math.ceil(existingTokens.length / tokensPerPage);
-        if (currentPage < totalPages) {
-            currentPage++;
-            renderTokens([]);
-        }
-    });
-
-    // Load tokens from cache on page load
-    if (!loadTokensFromCache()) {
-        console.log('No valid cache found, waiting for WebSocket data.');
-    }
-});
     </script>
 </body>
 </html>
