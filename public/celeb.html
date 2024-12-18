@@ -391,6 +391,8 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> 
     <script>
         // WebSocket connection
         const socket = new WebSocket('wss://project25backend.onrender.com/x-scraper');
@@ -566,120 +568,119 @@
         }
 
         // Function to create cards dynamically
-  
-
         async function createCards(data) {
-    const container = document.getElementById('cards-container');
-    container.innerHTML = ''; // Clear previous cards
+            const container = document.getElementById('cards-container');
+            container.innerHTML = ''; // Clear previous cards
 
-    const cardPromises = data.map(async (item) => {
-        try {
-            const card = document.createElement('div');
-            card.className = 'card';
+            const cardPromises = data.map(async (item) => {
+                try {
+                    const card = document.createElement('div');
+                    card.className = 'card';
 
-            // Tag for pumpfun or dexscreener
-            const tag = document.createElement('div');
-            tag.className = 'tag';
-            tag.textContent = item.novi_query_type === "pumpfun" ? "Pump.fun" : "Dexscreener";
-            card.appendChild(tag);
+                    // Tag for pumpfun or dexscreener
+                    const tag = document.createElement('div');
+                    tag.className = 'tag';
+                    tag.textContent = item.novi_query_type === "pumpfun" ? "Pump.fun" : "Dexscreener";
+                    card.appendChild(tag);
 
-            // Profile image
-            const image = document.createElement('img');
-            image.src = item?.user?.profile_image_url_https || 'default-profile.png';
-            card.appendChild(image);
+                    // Profile image
+                    const image = document.createElement('img');
+                    image.src = item?.user?.profile_image_url_https || 'default-profile.png';
+                    card.appendChild(image);
 
-            // User name and screen name
-            const userInfo = document.createElement('div');
-            userInfo.innerHTML = `<strong>${item?.user?.name || 'Unknown User'}</strong> (@${item?.user?.screen_name || 'unknown'})`;
-            card.appendChild(userInfo);
+                    // User name and screen name
+                    const userInfo = document.createElement('div');
+                    userInfo.innerHTML = `<strong>${item?.user?.name || 'Unknown User'}</strong> (@${item?.user?.screen_name || 'unknown'})`;
+                    card.appendChild(userInfo);
 
-            // Tweet created at
-            const tweetCreatedAt = document.createElement('p');
-            tweetCreatedAt.textContent = `Tweeted: ${formatTimeDifference(item?.tweet_created_at)}`;
-            card.appendChild(tweetCreatedAt);
+                    // Tweet created at
+                    const tweetCreatedAt = document.createElement('p');
+                    tweetCreatedAt.textContent = `Tweeted: ${formatTimeDifference(item?.tweet_created_at)}`;
+                    card.appendChild(tweetCreatedAt);
 
-            // Tweet link
-            const tweetLink = document.createElement('a');
-            tweetLink.href = `https://x.com/${item?.user?.screen_name}/status/${item.id_str}`;
-            tweetLink.textContent = "View Tweet";
-            tweetLink.target = "_blank";
-            card.appendChild(tweetLink);
+                    // Tweet link
+                    const tweetLink = document.createElement('a');
+                    tweetLink.href = `https://x.com/${item?.user?.screen_name}/status/${item.id_str}`;
+                    tweetLink.textContent = "View Tweet";
+                    tweetLink.target = "_blank";
+                    card.appendChild(tweetLink);
 
-            // Full text with clickable links and truncation
-            const fullText = document.createElement('p');
-            let truncatedText = item?.full_text || '';
-            if (truncatedText.length > 100) {
-                truncatedText = truncatedText.substring(0, 100) + '...';
-            }
-            fullText.innerHTML = makeLinksClickable(truncatedText);
-            card.appendChild(fullText);
+                    // Full text with clickable links and truncation
+                    const fullText = document.createElement('p');
+                    let truncatedText = item?.full_text || '';
+                    if (truncatedText.length > 100) {
+                        truncatedText = truncatedText.substring(0, 100) + '...';
+                    }
+                    fullText.innerHTML = makeLinksClickable(truncatedText);
+                    card.appendChild(fullText);
 
-            // Followers count
-            const followersCount = document.createElement('p');
-            followersCount.textContent = `Followers: ${item?.user?.followers_count || 0}`;
-            card.appendChild(followersCount);
+                    // Followers count
+                    const followersCount = document.createElement('p');
+                    followersCount.textContent = `Followers: ${item?.user?.followers_count || 0}`;
+                    card.appendChild(followersCount);
 
-            // View coin link
-            const viewCoinLink = document.createElement('a');
-            const url = item?.entities?.urls?.[0]?.expanded_url || '#';
-            viewCoinLink.href = url;
-            viewCoinLink.textContent = "View Coin";
-            viewCoinLink.target = "_blank";
-            card.appendChild(viewCoinLink);
+                    // View coin link
+                    const viewCoinLink = document.createElement('a');
+                    const url = item?.entities?.urls?.[0]?.expanded_url || '#';
+                    viewCoinLink.href = url;
+                    viewCoinLink.textContent = "View Coin";
+                    viewCoinLink.target = "_blank";
+                    card.appendChild(viewCoinLink);
 
-            // Market cap
-            const marketCap = document.createElement('p');
-            marketCap.textContent = `Market Cap (USD): ${formatMarketCap(
-                item.novi_query_type === "pumpfun" 
-                    ? item?.coinData?.usd_market_cap 
-                    : item?.marketCap
-            )}`;
-            card.appendChild(marketCap);
+                    // Market cap
+                    const marketCap = document.createElement('p');
+                    marketCap.textContent = `Market Cap (USD): ${formatMarketCap(
+                        item.novi_query_type === "pumpfun" 
+                            ? item?.coinData?.usd_market_cap 
+                            : item?.marketCap
+                    )}`;
+                    card.appendChild(marketCap);
 
-            // Coin created timestamp
-            const coinCreated = document.createElement('p');
-            coinCreated.textContent = `Coin Created: ${formatTimeDifference(
-                item.novi_query_type === "pumpfun" 
-                    ? item?.coinData?.created_timestamp 
-                    : item?.pairCreatedAt
-            )}`;
-            card.appendChild(coinCreated);
+                    // Coin created timestamp
+                    const coinCreated = document.createElement('p');
+                    coinCreated.textContent = `Coin Created: ${formatTimeDifference(
+                        item.novi_query_type === "pumpfun" 
+                            ? item?.coinData?.created_timestamp 
+                            : item?.pairCreatedAt
+                    )}`;
+                    card.appendChild(coinCreated);
 
-            // Buttons
-            const buttons = document.createElement('div');
-            buttons.className = 'buttons';
+                    // Buttons
+                    const buttons = document.createElement('div');
+                    buttons.className = 'buttons';
 
-            const buyButton = document.createElement('button');
-            buyButton.textContent = 'Buy';
-            buyButton.addEventListener('click', () => handleBuyClick(item));
-            buttons.appendChild(buyButton);
+                    const buyButton = document.createElement('button');
+                    buyButton.textContent = 'Buy';
+                    buyButton.addEventListener('click', () => handleBuyClick(item));
+                    buttons.appendChild(buyButton);
 
-            const viewButton = document.createElement('button');
-            viewButton.textContent = 'View';
-            viewButton.addEventListener('click', () => openPopup(item));
-            buttons.appendChild(viewButton);
+                    const viewButton = document.createElement('button');
+                    viewButton.textContent = 'View';
+                    viewButton.addEventListener('click', () => openPopup(item));
+                    buttons.appendChild(viewButton);
 
-            card.appendChild(buttons);
-            container.appendChild(card);
+                    card.appendChild(buttons);
+                    container.appendChild(card);
 
-            // Fetch DexScreener data if market cap and pair created at are not available
-            if (item.novi_query_type === "dexscreener" && item.marketCap === "N/A" && item.pairCreatedAt === "N/A") {
-                const dexData = await getDexScreenerData(item?.baseToken?.mintAddress);
-                if (dexData && dexData.pair) {
-                    item.marketCap = dexData.pair.marketCap || "N/A";
-                    item.pairCreatedAt = dexData.pair.pairCreatedAt || "N/A";
-                    
-                    marketCap.textContent = `Market Cap (USD): ${formatMarketCap(item.marketCap)}`;
-                    coinCreated.textContent = `Coin Created: ${formatTimeDifference(item.pairCreatedAt)}`;
+                    // Fetch DexScreener data if market cap and pair created at are not available
+                    if (item.novi_query_type === "dexscreener" && item.marketCap === "N/A" && item.pairCreatedAt === "N/A") {
+                        const dexData = await getDexScreenerData(item?.baseToken?.mintAddress);
+                        if (dexData && dexData.pair) {
+                            item.marketCap = dexData.pair.marketCap || "N/A";
+                            item.pairCreatedAt = dexData.pair.pairCreatedAt || "N/A";
+                            
+                            marketCap.textContent = `Market Cap (USD): ${formatMarketCap(item.marketCap)}`;
+                            coinCreated.textContent = `Coin Created: ${formatTimeDifference(item.pairCreatedAt)}`;
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error creating card for item:", item, error);
                 }
-            }
-        } catch (error) {
-            console.error("Error creating card for item:", item, error);
-        }
-    });
+            });
 
-    await Promise.all(cardPromises);
-}
+            await Promise.all(cardPromises);
+        }
+
         // Function to open the popup
         function openPopup(item) {
             const popup = document.getElementById('popup');

@@ -201,61 +201,79 @@
         </div>
     </nav>
 
-
     <br>
     <br><br>
     <div class="container">
         <!-- Internal Wallet Section -->
         <div class="section">
             <h2>Internal Wallet</h2>
-            <div class="select-all-checkbox">
-                <input type="checkbox" id="selectAllInternal">
-                <label for="selectAllInternal">Select All</label>
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#internalBurn">Burn Token</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#internalRecover">Recover Rent</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="internalBurn">
+                    <div class="select-all-checkbox">
+                        <input type="checkbox" id="selectAllInternalBurn"> Select All
+                    </div>
+                    <div id="internalBurnTokens">
+                        <!-- Burn Token boxes will be dynamically added here -->
+                    </div>
+                    <button id="burnBtnInternal" class="btn cleanup-btn" style="display: none;">Burn Selected Tokens</button>
+                </div>
+                <div class="tab-pane fade" id="internalRecover">
+                    <div class="select-all-checkbox">
+                        <input type="checkbox" id="selectAllInternalRecover"> Select All
+                    </div>
+                    <div id="internalRecoverTokens">
+                        <!-- Recover Rent boxes will be dynamically added here -->
+                    </div>
+                    <button id="recoverBtnInternal" class="btn cleanup-btn" style="display: none;">Recover Selected Tokens</button>
+                </div>
             </div>
-            <div id="internalWalletTokens">
-                <!-- Token boxes will be dynamically added here -->
-            </div>
-            <button id="cleanupBtnInternal" class="btn cleanup-btn" style="display: none;">Cleanup Selected Tokens</button>
         </div>
 
-        <!-- Connect Wallet Section -->
+        <!-- External Wallet Section -->
         <div class="section">
             <h2>External Wallet</h2>
-            <button id="connectWalletBtn" class="btn btn-primary">Connect Wallet</button>
-
-            <div id="walletAddress" style="margin-top: 20px; display: none;">
-                <p><strong>Connected Wallet Address:</strong> <span id="walletAddressText"></span></p>
-                <button id="disconnectWalletBtn" class="btn disconnect-btn" style="display: none;">Disconnect Wallet</button>
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#externalBurn">Burn Token</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#externalRecover">Recover Rent</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="externalBurn">
+                    <button id="connectWalletBtn" class="btn btn-primary">Connect Wallet</button>
+                    <div id="walletAddress" style="margin-top: 20px; display: none;">
+                        <p><strong>Connected Wallet Address:</strong> <span id="walletAddressText"></span></p>
+                        <button id="disconnectWalletBtn" class="btn disconnect-btn" style="display: none;">Disconnect Wallet</button>
+                    </div>
+                    <br>
+                    <div class="select-all-checkbox">
+                        <input type="checkbox" id="selectAllExternalBurn"> Select All
+                    </div>
+                    <div id="externalBurnTokens" style="display: none;">
+                        <!-- Burn Token boxes will be dynamically added here -->
+                    </div>
+                    <button id="burnBtnExternal" class="btn cleanup-btn" style="display: none;">Burn Selected Tokens</button>
+                </div>
+                <div class="tab-pane fade" id="externalRecover">
+                    <div class="select-all-checkbox">
+                        <input type="checkbox" id="selectAllExternalRecover"> Select All
+                    </div>
+                    <div id="externalRecoverTokens" style="display: none;">
+                        <!-- Recover Rent boxes will be dynamically added here -->
+                    </div>
+                    <button id="recoverBtnExternal" class="btn cleanup-btn" style="display: none;">Recover Selected Tokens</button>
+                </div>
             </div>
-            <br>
-            <div class="select-all-checkbox">
-                <input type="checkbox" id="selectAllExternal">
-                <label for="selectAllExternal">Select All</label>
-            </div>
-            <div id="connectedWalletTokens" style="display: none;">
-                <!-- Token boxes will be dynamically added here -->
-            </div>
-            <button id="cleanupBtnConnected" class="btn cleanup-btn" style="display: none;">Cleanup Selected Tokens</button>
-        </div>
-    </div>
-
-    <!-- Cleanup Confirmation Modal -->
-    <div id="cleanupModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeCleanupModal">&times;</span>
-            <h3>Confirm Cleanup</h3>
-            <p>Are you sure you want to cleanup the selected tokens? This action is irreversible.</p>
-            <button id="confirmCleanupBtn" class="btn btn-danger">Confirm</button>
-        </div>
-    </div>
-
-    <!-- Selected Tokens Modal -->
-    <div id="selectedTokensModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeSelectedTokensModal">&times;</span>
-            <h3>Selected Tokens</h3>
-            <ul id="selectedTokensList"></ul>
-            <button id="confirmCleanupBtnFromModal" class="btn btn-danger">Confirm Cleanup</button>
         </div>
     </div>
 
@@ -271,7 +289,7 @@
     <div id="successOverlay" class="modal">
         <div class="modal-content" style="color: black;">
             <h3>Success!</h3>
-            <p>The cleanup was successful.</p>
+            <p>The operation was successful.</p>
             <button id="closeSuccessOverlay" class="btn btn-primary">Close</button>
         </div>
     </div>
@@ -291,78 +309,76 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const internalWalletTokens = document.getElementById('internalWalletTokens');
-            const cleanupBtnInternal = document.getElementById('cleanupBtnInternal');
-            const cleanupBtnConnected = document.getElementById('cleanupBtnConnected');
-            const cleanupModal = document.getElementById('cleanupModal');
-            const closeCleanupModal = document.getElementById('closeCleanupModal');
-            const confirmCleanupBtn = document.getElementById('confirmCleanupBtn');
+            const internalBurnTokens = document.getElementById('internalBurnTokens');
+            const internalRecoverTokens = document.getElementById('internalRecoverTokens');
+            const burnBtnInternal = document.getElementById('burnBtnInternal');
+            const recoverBtnInternal = document.getElementById('recoverBtnInternal');
+            const externalBurnTokens = document.getElementById('externalBurnTokens');
+            const externalRecoverTokens = document.getElementById('externalRecoverTokens');
+            const burnBtnExternal = document.getElementById('burnBtnExternal');
+            const recoverBtnExternal = document.getElementById('recoverBtnExternal');
             const loadingOverlay = document.getElementById('loadingOverlay');
             const successOverlay = document.getElementById('successOverlay');
             const closeSuccessOverlay = document.getElementById('closeSuccessOverlay');
             const errorOverlay = document.getElementById('errorOverlay');
             const closeErrorOverlay = document.getElementById('closeErrorOverlay');
-            const selectedTokensModal = document.getElementById('selectedTokensModal');
-            const closeSelectedTokensModal = document.getElementById('closeSelectedTokensModal');
-            const selectedTokensList = document.getElementById('selectedTokensList');
-            const confirmCleanupBtnFromModal = document.getElementById('confirmCleanupBtnFromModal');
-        
-            let selectedTokensInternal = [];
-            let selectedTokensConnected = [];
-        
+            const connectWalletBtn = document.getElementById('connectWalletBtn');
+            const walletAddress = document.getElementById('walletAddress');
+            const walletAddressText = document.getElementById('walletAddressText');
+            const disconnectWalletBtn = document.getElementById('disconnectWalletBtn');
+            const selectAllInternalBurn = document.getElementById('selectAllInternalBurn');
+            const selectAllInternalRecover = document.getElementById('selectAllInternalRecover');
+            const selectAllExternalBurn = document.getElementById('selectAllExternalBurn');
+            const selectAllExternalRecover = document.getElementById('selectAllExternalRecover');
+
+            let selectedBurnTokensInternal = [];
+            let selectedRecoverTokensInternal = [];
+            let selectedBurnTokensExternal = [];
+            let selectedRecoverTokensExternal = [];
+
             // Function to show loading state
             const showLoadingState = (container) => {
                 container.innerHTML = `<div class="loading-state">Loading...</div>`;
             };
-        
+
             // Function to hide loading state
             const hideLoadingState = (container) => {
                 container.innerHTML = '';
             };
-        
+
             // Render tokens for internal wallet
             const renderInternalWalletTokens = (tokens) => {
-                hideLoadingState(internalWalletTokens);
-                if (tokens.length === 0) {
-                    internalWalletTokens.innerHTML = `<p>No tokens found for the internal wallet.</p>`;
-                } else {
-                    tokens.forEach(token => {
-                        const tokenBox = document.createElement('div');
-                        tokenBox.className = 'token-box';
-                        tokenBox.innerHTML = `
-                            <div>
-                                <strong>${token.metadata.name}</strong>
-                                <p>${token.metadata.symbol} - ${token.amount} tokens</p>
-                            </div>
-                            <input type="checkbox" class="token-checkbox" value="${token.tokenAccount}" data-mint="${token.mint}" data-amount="${token.amount}" data-decimals="${token.decimals}">
-                        `;
-                        tokenBox.addEventListener('click', () => {
-                            tokenBox.classList.toggle('selected');
-                            const checkbox = tokenBox.querySelector('.token-checkbox');
-                            checkbox.checked = !checkbox.checked;
-                            if (checkbox.checked) {
-                                selectedTokensInternal.push({
-                                    tokenAccount: checkbox.value,
-                                    mintAddress: checkbox.dataset.mint,
-                                    amount: parseFloat(checkbox.dataset.amount),
-                                    decimals: parseInt(checkbox.dataset.decimals)
-                                });
-                            } else {
-                                selectedTokensInternal = selectedTokensInternal.filter(t => t.tokenAccount !== checkbox.value);
-                            }
-                            cleanupBtnInternal.style.display = selectedTokensInternal.length > 0 ? 'block' : 'none';
-                        });
-                        internalWalletTokens.appendChild(tokenBox);
-                    });
-                }
+                hideLoadingState(internalBurnTokens);
+                hideLoadingState(internalRecoverTokens);
+                internalBurnTokens.innerHTML = '';
+                internalRecoverTokens.innerHTML = '';
+
+                tokens.forEach(token => {
+                    const tokenBox = document.createElement('div');
+                    tokenBox.className = 'token-box';
+                    tokenBox.innerHTML = `
+                        <div>
+                            <strong>${token.metadata.name}</strong>
+                            <p>${token.metadata.symbol} - ${token.amount} tokens</p>
+                        </div>
+                        <input type="checkbox" class="token-checkbox" value="${token.tokenAccount}" data-mint="${token.mint}" data-amount="${token.amount}" data-decimals="${token.decimals}">
+                    `;
+
+                    // Add to both tabs if amount > 0, otherwise only to Recover Rent tab
+                    if (token.amount > 0) {
+                        internalBurnTokens.appendChild(tokenBox.cloneNode(true));
+                    }
+                    internalRecoverTokens.appendChild(tokenBox);
+                });
             };
-        
+
             // Fetch tokens for internal wallet from localStorage
             const fetchInternalWalletTokens = async () => {
-                showLoadingState(internalWalletTokens);
+                showLoadingState(internalBurnTokens);
+                showLoadingState(internalRecoverTokens);
                 const botInitialization = JSON.parse(localStorage.getItem('botInitialization'));
                 if (botInitialization && botInitialization.userDetails && botInitialization.userDetails.wallet) {
                     const solanaAddress = botInitialization.userDetails.wallet.solana;
@@ -375,7 +391,7 @@
                             },
                             body: JSON.stringify({ ownerPublicKey: solanaAddress })
                         });
-        
+
                         const apiData = await apiResponse.json();
                         if (apiData.status && apiData.tokens) {
                             renderInternalWalletTokens(apiData.tokens);
@@ -389,231 +405,480 @@
                     renderInternalWalletTokens([]);
                 }
             };
-        
-            // Cleanup button click handler for internal wallet
-            cleanupBtnInternal.addEventListener('click', () => {
-                selectedTokensModal.style.display = 'block';
-                selectedTokensList.innerHTML = selectedTokensInternal.map(token => `<li>${token.metadata.name} (${token.metadata.symbol})</li>`).join('');
-            });
-        
-            // Confirm cleanup from modal for internal wallet
-            confirmCleanupBtnFromModal.addEventListener('click', async () => {
-                selectedTokensModal.style.display = 'none';
+
+            // Burn button click handler for internal wallet
+            burnBtnInternal.addEventListener('click', async () => {
                 loadingOverlay.style.display = 'block';
-        
+
                 // Fetch the Solana address from localStorage
                 const botInitialization = JSON.parse(localStorage.getItem('botInitialization'));
                 if (!botInitialization || !botInitialization.userDetails || !botInitialization.userDetails.wallet || !botInitialization.userDetails.wallet.solana) {
-                    alert('Kindly login on TG to get wallet details .');
+                    alert('Kindly login on TG to get wallet details.');
                     loadingOverlay.style.display = 'none';
                     return;
                 }
-        
+
                 const ownerPublicKey = botInitialization.userDetails.wallet.solana;
-                console.log('ownerPublicKey:', ownerPublicKey); // Debugging
-        
-                // Fetch the telegramId from cookies
-                const getCookieValue = (name) => {
-                    if (typeof document === 'undefined') {
-                        return null;
-                    }
-                    const cookies = document.cookie.split(';');
-                    const cookie = cookies.find(cookie => cookie.trim().startsWith(`${name}=`));
-                    return cookie ? cookie.split('=')[1] : null;
-                };
-        
-                const telegramId = getCookieValue('telegramId');
-                if (!telegramId) {
-                    // alert('Telegram ID not found in cookies.');
-                    loadingOverlay.style.display = 'none';
-                    return;
-                }
-        
-                // Prepare transactions for selected tokens
-                const tokenDetails = selectedTokensInternal;
-        
-                // Debugging: Log the request body
-                console.log('Request Body:', JSON.stringify({ ownerPublicKey, tokenDetails, telegramId }));
-        
+                const telegramId = botInitialization.userDetails.telegramId;
+
                 try {
-                    const apiUrl = `https://project25backend.onrender.com/api/v1/inc/internal-sol-burnable-transaction`;
+                    const apiUrl = `https://project25backend.onrender.com/api/v1/inc/prepare-internal-burn-transaction`;
                     const apiResponse = await fetch(apiUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ ownerPublicKey, tokenDetails, telegramId })
+                        body: JSON.stringify({ ownerPublicKey, tokenDetails: selectedBurnTokensInternal, telegramId })
                     });
-        
+
                     const apiData = await apiResponse.json();
-        
-                    if (apiData.status && apiData.transaction) {
-                        console.log('Prepared base64 transaction:', apiData.transaction);
-        
-                        // Show success overlay
+
+                    if (apiData.success) {
                         successOverlay.style.display = 'block';
+                        fetchInternalWalletTokens(); // Refresh the token boxes
                     } else {
-                        // alert('Failed to prepare transaction.');
+                        errorOverlay.style.display = 'block';
+                        document.getElementById('errorMessage').textContent = 'Failed to prepare burn transaction.';
                     }
                 } catch (error) {
-                    console.error('Error preparing transaction:', error);
-                    // alert('An error occurred while processing your request.');
+                    console.error('Error preparing burn transaction:', error);
+                    errorOverlay.style.display = 'block';
+                    document.getElementById('errorMessage').textContent = 'An error occurred while processing your request.';
                 } finally {
                     loadingOverlay.style.display = 'none';
                 }
             });
-        
+
+            // Recover button click handler for internal wallet
+            recoverBtnInternal.addEventListener('click', async () => {
+                loadingOverlay.style.display = 'block';
+
+                // Fetch the Solana address from localStorage
+                const botInitialization = JSON.parse(localStorage.getItem('botInitialization'));
+                if (!botInitialization || !botInitialization.userDetails || !botInitialization.userDetails.wallet || !botInitialization.userDetails.wallet.solana) {
+                    alert('Kindly login on TG to get wallet details.');
+                    loadingOverlay.style.display = 'none';
+                    return;
+                }
+
+                const ownerPublicKey = botInitialization.userDetails.wallet.solana;
+                const telegramId = botInitialization.userDetails.telegramId;
+
+                try {
+                    const apiUrl = `https://project25backend.onrender.com/api/v1/inc/prepare-internal-close-account-transaction`;
+                    const apiResponse = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ ownerPublicKey, tokenDetails: selectedRecoverTokensInternal, telegramId })
+                    });
+
+                    const apiData = await apiResponse.json();
+
+                    if (apiData.success) {
+                        successOverlay.style.display = 'block';
+                        fetchInternalWalletTokens(); // Refresh the token boxes
+                    } else {
+                        errorOverlay.style.display = 'block';
+                        document.getElementById('errorMessage').textContent = 'Failed to prepare recover rent transaction.';
+                    }
+                } catch (error) {
+                    console.error('Error preparing recover rent transaction:', error);
+                    errorOverlay.style.display = 'block';
+                    document.getElementById('errorMessage').textContent = 'An error occurred while processing your request.';
+                } finally {
+                    loadingOverlay.style.display = 'none';
+                }
+            });
+
             // Close Success Overlay Button
             closeSuccessOverlay.addEventListener('click', () => {
                 successOverlay.style.display = 'none';
             });
-        
+
+            // Close Error Overlay Button
+            closeErrorOverlay.addEventListener('click', () => {
+                errorOverlay.style.display = 'none';
+            });
+
             // Render tokens on page load
             fetchInternalWalletTokens();
-        
+
             // Connect Wallet Button
-            const connectWalletBtn = document.getElementById('connectWalletBtn');
-            const connectedWalletTokens = document.getElementById('connectedWalletTokens');
-            const walletAddress = document.getElementById('walletAddress');
-            const walletAddressText = document.getElementById('walletAddressText');
-            const disconnectWalletBtn = document.getElementById('disconnectWalletBtn');
-        
+            let wallet;
+
+            const connectWallet = async () => {
+                try {
+                    wallet = await window.solana.connect();
+                    walletAddressText.textContent = wallet.publicKey.toString();
+                    walletAddress.style.display = 'block';
+                    disconnectWalletBtn.style.display = 'block';
+                    connectWalletBtn.style.display = 'none';
+                    externalBurnTokens.style.display = 'block';
+                    externalRecoverTokens.style.display = 'block';
+
+                    // Fetch tokens from API
+                    showLoadingState(externalBurnTokens);
+                    showLoadingState(externalRecoverTokens);
+                    const apiUrl = `https://project25backend.onrender.com/api/v1/inc/fetch-sol-burnable`;
+                    const apiResponse = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ ownerPublicKey: wallet.publicKey.toString() })
+                    });
+
+                    const apiData = await apiResponse.json();
+
+                    if (apiData.status && apiData.tokens) {
+                        renderExternalWalletTokens(apiData.tokens);
+                    } else {
+                        renderExternalWalletTokens([]);
+                    }
+                } catch (err) {
+                    console.log(err);
+                }
+            };
+
+            connectWalletBtn.addEventListener('click', connectWallet);
+
             // Disconnect Wallet Button
             disconnectWalletBtn.addEventListener('click', () => {
                 walletAddress.style.display = 'none';
                 disconnectWalletBtn.style.display = 'none';
                 connectWalletBtn.style.display = 'block';
-                connectedWalletTokens.style.display = 'none';
-                connectedWalletTokens.innerHTML = '';
+                externalBurnTokens.style.display = 'none';
+                externalRecoverTokens.style.display = 'none';
+                externalBurnTokens.innerHTML = '';
+                externalRecoverTokens.innerHTML = '';
             });
-        
-            // Wallet connection logic
-            var wallet;
-            const lamports_per_sol = solanaWeb3.LAMPORTS_PER_SOL;
-        
-            function connectWallet() {
-                (async () => {
-                    try {
-                        wallet = await window.solana.connect();
-                        walletAddressText.textContent = wallet.publicKey.toString();
-                        walletAddress.style.display = 'block';
-                        disconnectWalletBtn.style.display = 'block';
-                        connectWalletBtn.style.display = 'none';
-                        connectedWalletTokens.style.display = 'block';
-        
-                        // Fetch tokens from API
-                        showLoadingState(connectedWalletTokens);
-                        const apiUrl = `https://project25backend.onrender.com/api/v1/inc/fetch-sol-burnable`;
-                        const apiResponse = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ ownerPublicKey: wallet.publicKey.toString() })
-                        });
-        
-                        const apiData = await apiResponse.json();
-        
-                        if (apiData.status && apiData.tokens) {
-                            renderConnectedWalletTokens(apiData.tokens);
-                        } else {
-                            renderConnectedWalletTokens([]);
-                        }
-                    } catch (err) {
-                        console.log(err);
+
+            // Render tokens for external wallet
+            const renderExternalWalletTokens = (tokens) => {
+                hideLoadingState(externalBurnTokens);
+                hideLoadingState(externalRecoverTokens);
+                externalBurnTokens.innerHTML = '';
+                externalRecoverTokens.innerHTML = '';
+
+                tokens.forEach(token => {
+                    const tokenBox = document.createElement('div');
+                    tokenBox.className = 'token-box';
+                    tokenBox.innerHTML = `
+                        <div>
+                            <strong>${token.metadata.name}</strong>
+                            <p>${token.metadata.symbol} - ${token.amount} tokens</p>
+                        </div>
+                        <input type="checkbox" class="token-checkbox" value="${token.tokenAccount}" data-mint="${token.mint}" data-amount="${token.amount}" data-decimals="${token.decimals}">
+                    `;
+
+                    // Add to both tabs if amount > 0, otherwise only to Recover Rent tab
+                    if (token.amount > 0) {
+                        externalBurnTokens.appendChild(tokenBox.cloneNode(true));
                     }
-                })();
-        
-                window.solana.on("connect", () => {
-                    document.getElementById("connectWalletBtn").innerText = "Connected";
+                    externalRecoverTokens.appendChild(tokenBox);
                 });
-            }
-        
-            connectWalletBtn.addEventListener('click', connectWallet);
-        
-            // Render tokens for connected wallet
-            const renderConnectedWalletTokens = (tokens) => {
-                hideLoadingState(connectedWalletTokens);
-                if (tokens.length === 0) {
-                    connectedWalletTokens.innerHTML = `<p>No tokens found for the connected wallet.</p>`;
-                } else {
-                    tokens.forEach(token => {
-                        const tokenBox = document.createElement('div');
-                        tokenBox.className = 'token-box';
-                        tokenBox.innerHTML = `
-                            <div>
-                                <strong>${token.metadata ? token.metadata.name : 'Unknown Token'}</strong>
-                                <p>${token.metadata ? token.metadata.symbol : 'Unknown Symbol'} - ${token.amount} tokens</p>
-                            </div>
-                            <input type="checkbox" class="token-checkbox" value="${token.tokenAccount}" data-mint="${token.mint}" data-amount="${token.amount}" data-decimals="${token.decimals}">
-                        `;
-                        tokenBox.addEventListener('click', () => {
-                            tokenBox.classList.toggle('selected');
-                            const checkbox = tokenBox.querySelector('.token-checkbox');
-                            checkbox.checked = !checkbox.checked;
-                            if (checkbox.checked) {
-                                selectedTokensConnected.push({
-                                    tokenAccount: checkbox.value,
-                                    mintAddress: checkbox.dataset.mint,
-                                    amount: parseFloat(checkbox.dataset.amount),
-                                    decimals: parseInt(checkbox.dataset.decimals)
-                                });
-                            } else {
-                                selectedTokensConnected = selectedTokensConnected.filter(t => t.tokenAccount !== checkbox.value);
-                            }
-                            cleanupBtnConnected.style.display = selectedTokensConnected.length > 0 ? 'block' : 'none';
-                        });
-                        connectedWalletTokens.appendChild(tokenBox);
+            };
+
+            // Burn button click handler for external wallet
+            burnBtnExternal.addEventListener('click', async () => {
+                loadingOverlay.style.display = 'block';
+
+                const ownerPublicKey = wallet.publicKey.toString();
+
+                try {
+                    const apiUrl = `https://project25backend.onrender.com/api/v1/inc/prepare-burn-transaction`;
+                    const apiResponse = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ ownerPublicKey, tokenDetails: selectedBurnTokensExternal })
                     });
+
+                    const apiData = await apiResponse.json();
+
+                    if (apiData.status && apiData.transaction) {
+                        const decodedTransaction = solanaWeb3.Transaction.from(buffer.Buffer.from(apiData.transaction, 'base64'));
+                        const connection = new solanaWeb3.Connection('https://serene-dimensional-meme.solana-mainnet.quiknode.pro/4a1f6288f8de1e50bf41b7fcde54f143054448fb');
+                        const provider = window.solana;
+
+                        // Fetch the latest blockhash
+                        const latestBlockhash = await connection.getLatestBlockhash();
+                        decodedTransaction.recentBlockhash = latestBlockhash.blockhash;
+
+                        const signedTransaction = await provider.signTransaction(decodedTransaction);
+                        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+                        await connection.confirmTransaction(signature, 'confirmed');
+
+                        successOverlay.style.display = 'block';
+                        fetchExternalWalletTokens(); // Refresh the token boxes
+                    } else {
+                        errorOverlay.style.display = 'block';
+                        document.getElementById('errorMessage').textContent = 'Failed to prepare burn transaction.';
+                    }
+                } catch (error) {
+                    console.error('Error preparing or signing burn transaction:', error);
+                    errorOverlay.style.display = 'block';
+                    document.getElementById('errorMessage').textContent = 'An error occurred while processing your request.';
+                } finally {
+                    loadingOverlay.style.display = 'none';
+                }
+            });
+
+            // Recover button click handler for external wallet
+            recoverBtnExternal.addEventListener('click', async () => {
+                loadingOverlay.style.display = 'block';
+
+                const ownerPublicKey = wallet.publicKey.toString();
+
+                try {
+                    const apiUrl = `https://project25backend.onrender.com/api/v1/inc/prepare-close-account-transaction`;
+                    const apiResponse = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ ownerPublicKey, tokenDetails: selectedRecoverTokensExternal })
+                    });
+
+                    const apiData = await apiResponse.json();
+
+                    if (apiData.status && apiData.transaction) {
+                        const decodedTransaction = solanaWeb3.Transaction.from(buffer.Buffer.from(apiData.transaction, 'base64'));
+                        const connection = new solanaWeb3.Connection('https://serene-dimensional-meme.solana-mainnet.quiknode.pro/4a1f6288f8de1e50bf41b7fcde54f143054448fb');
+                        const provider = window.solana;
+
+                        // Fetch the latest blockhash
+                        const latestBlockhash = await connection.getLatestBlockhash();
+                        decodedTransaction.recentBlockhash = latestBlockhash.blockhash;
+
+                        const signedTransaction = await provider.signTransaction(decodedTransaction);
+                        const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+                        await connection.confirmTransaction(signature, 'confirmed');
+
+                        successOverlay.style.display = 'block';
+                        fetchExternalWalletTokens(); // Refresh the token boxes
+                    } else {
+                        errorOverlay.style.display = 'block';
+                        document.getElementById('errorMessage').textContent = 'Failed to prepare recover rent transaction.';
+                    }
+                } catch (error) {
+                    console.error('Error preparing or signing recover rent transaction:', error);
+                    errorOverlay.style.display = 'block';
+                    document.getElementById('errorMessage').textContent = 'An error occurred while processing your request.';
+                } finally {
+                    loadingOverlay.style.display = 'none';
+                }
+            });
+
+            // Event delegation for internal burn tokens
+            internalBurnTokens.addEventListener('change', (event) => {
+                if (event.target.classList.contains('token-checkbox')) {
+                    const checkbox = event.target;
+                    const tokenBox = checkbox.parentElement;
+                    tokenBox.classList.toggle('selected', checkbox.checked);
+
+                    if (checkbox.checked) {
+                        if (checkbox.dataset.amount > 0) {
+                            selectedBurnTokensInternal.push({
+                                tokenAccount: checkbox.value,
+                                mintAddress: checkbox.dataset.mint,
+                                amount: parseFloat(checkbox.dataset.amount),
+                                decimals: parseInt(checkbox.dataset.decimals)
+                            });
+                        }
+                    } else {
+                        if (checkbox.dataset.amount > 0) {
+                            selectedBurnTokensInternal = selectedBurnTokensInternal.filter(t => t.tokenAccount !== checkbox.value);
+                        }
+                    }
+                    burnBtnInternal.style.display = selectedBurnTokensInternal.length > 0 ? 'block' : 'none';
+                }
+            });
+
+            // Event delegation for internal recover tokens
+            internalRecoverTokens.addEventListener('change', (event) => {
+                if (event.target.classList.contains('token-checkbox')) {
+                    const checkbox = event.target;
+                    const tokenBox = checkbox.parentElement;
+                    tokenBox.classList.toggle('selected', checkbox.checked);
+
+                    if (checkbox.checked) {
+                        selectedRecoverTokensInternal.push({
+                            tokenAccount: checkbox.value,
+                            mintAddress: checkbox.dataset.mint,
+                            amount: parseFloat(checkbox.dataset.amount),
+                            decimals: parseInt(checkbox.dataset.decimals)
+                        });
+                    } else {
+                        selectedRecoverTokensInternal = selectedRecoverTokensInternal.filter(t => t.tokenAccount !== checkbox.value);
+                    }
+                    recoverBtnInternal.style.display = selectedRecoverTokensInternal.length > 0 ? 'block' : 'none';
+                }
+            });
+
+            // Event delegation for external burn tokens
+            externalBurnTokens.addEventListener('change', (event) => {
+                if (event.target.classList.contains('token-checkbox')) {
+                    const checkbox = event.target;
+                    const tokenBox = checkbox.parentElement;
+                    tokenBox.classList.toggle('selected', checkbox.checked);
+
+                    if (checkbox.checked) {
+                        if (checkbox.dataset.amount > 0) {
+                            selectedBurnTokensExternal.push({
+                                tokenAccount: checkbox.value,
+                                mintAddress: checkbox.dataset.mint,
+                                amount: parseFloat(checkbox.dataset.amount),
+                                decimals: parseInt(checkbox.dataset.decimals)
+                            });
+                        }
+                    } else {
+                        if (checkbox.dataset.amount > 0) {
+                            selectedBurnTokensExternal = selectedBurnTokensExternal.filter(t => t.tokenAccount !== checkbox.value);
+                        }
+                    }
+                    burnBtnExternal.style.display = selectedBurnTokensExternal.length > 0 ? 'block' : 'none';
+                }
+            });
+
+            // Event delegation for external recover tokens
+            externalRecoverTokens.addEventListener('change', (event) => {
+                if (event.target.classList.contains('token-checkbox')) {
+                    const checkbox = event.target;
+                    const tokenBox = checkbox.parentElement;
+                    tokenBox.classList.toggle('selected', checkbox.checked);
+
+                    if (checkbox.checked) {
+                        selectedRecoverTokensExternal.push({
+                            tokenAccount: checkbox.value,
+                            mintAddress: checkbox.dataset.mint,
+                            amount: parseFloat(checkbox.dataset.amount),
+                            decimals: parseInt(checkbox.dataset.decimals)
+                        });
+                    } else {
+                        selectedRecoverTokensExternal = selectedRecoverTokensExternal.filter(t => t.tokenAccount !== checkbox.value);
+                    }
+                    recoverBtnExternal.style.display = selectedRecoverTokensExternal.length > 0 ? 'block' : 'none';
+                }
+            });
+
+            // Select All Checkbox Handlers
+            selectAllInternalBurn.addEventListener('change', () => {
+                const checkboxes = internalBurnTokens.querySelectorAll('.token-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = selectAllInternalBurn.checked;
+                    const tokenBox = checkbox.parentElement;
+                    if (selectAllInternalBurn.checked) {
+                        tokenBox.classList.add('selected');
+                        if (checkbox.dataset.amount > 0) {
+                            selectedBurnTokensInternal.push({
+                                tokenAccount: checkbox.value,
+                                mintAddress: checkbox.dataset.mint,
+                                amount: parseFloat(checkbox.dataset.amount),
+                                decimals: parseInt(checkbox.dataset.decimals)
+                            });
+                        }
+                    } else {
+                        tokenBox.classList.remove('selected');
+                        if (checkbox.dataset.amount > 0) {
+                            selectedBurnTokensInternal = selectedBurnTokensInternal.filter(t => t.tokenAccount !== checkbox.value);
+                        }
+                    }
+                });
+                burnBtnInternal.style.display = selectedBurnTokensInternal.length > 0 ? 'block' : 'none';
+            });
+
+            selectAllInternalRecover.addEventListener('change', () => {
+                const checkboxes = internalRecoverTokens.querySelectorAll('.token-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = selectAllInternalRecover.checked;
+                    const tokenBox = checkbox.parentElement;
+                    if (selectAllInternalRecover.checked) {
+                        tokenBox.classList.add('selected');
+                        selectedRecoverTokensInternal.push({
+                            tokenAccount: checkbox.value,
+                            mintAddress: checkbox.dataset.mint,
+                            amount: parseFloat(checkbox.dataset.amount),
+                            decimals: parseInt(checkbox.dataset.decimals)
+                        });
+                    } else {
+                        tokenBox.classList.remove('selected');
+                        selectedRecoverTokensInternal = selectedRecoverTokensInternal.filter(t => t.tokenAccount !== checkbox.value);
+                    }
+                });
+                recoverBtnInternal.style.display = selectedRecoverTokensInternal.length > 0 ? 'block' : 'none';
+            });
+
+            selectAllExternalBurn.addEventListener('change', () => {
+                const checkboxes = externalBurnTokens.querySelectorAll('.token-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = selectAllExternalBurn.checked;
+                    const tokenBox = checkbox.parentElement;
+                    if (selectAllExternalBurn.checked) {
+                        tokenBox.classList.add('selected');
+                        if (checkbox.dataset.amount > 0) {
+                            selectedBurnTokensExternal.push({
+                                tokenAccount: checkbox.value,
+                                mintAddress: checkbox.dataset.mint,
+                                amount: parseFloat(checkbox.dataset.amount),
+                                decimals: parseInt(checkbox.dataset.decimals)
+                            });
+                        }
+                    } else {
+                        tokenBox.classList.remove('selected');
+                        if (checkbox.dataset.amount > 0) {
+                            selectedBurnTokensExternal = selectedBurnTokensExternal.filter(t => t.tokenAccount !== checkbox.value);
+                        }
+                    }
+                });
+                burnBtnExternal.style.display = selectedBurnTokensExternal.length > 0 ? 'block' : 'none';
+            });
+
+            selectAllExternalRecover.addEventListener('change', () => {
+                const checkboxes = externalRecoverTokens.querySelectorAll('.token-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = selectAllExternalRecover.checked;
+                    const tokenBox = checkbox.parentElement;
+                    if (selectAllExternalRecover.checked) {
+                        tokenBox.classList.add('selected');
+                        selectedRecoverTokensExternal.push({
+                            tokenAccount: checkbox.value,
+                            mintAddress: checkbox.dataset.mint,
+                            amount: parseFloat(checkbox.dataset.amount),
+                            decimals: parseInt(checkbox.dataset.decimals)
+                        });
+                    } else {
+                        tokenBox.classList.remove('selected');
+                        selectedRecoverTokensExternal = selectedRecoverTokensExternal.filter(t => t.tokenAccount !== checkbox.value);
+                    }
+                });
+                recoverBtnExternal.style.display = selectedRecoverTokensExternal.length > 0 ? 'block' : 'none';
+            });
+
+            // Fetch tokens for external wallet
+            const fetchExternalWalletTokens = async () => {
+                showLoadingState(externalBurnTokens);
+                showLoadingState(externalRecoverTokens);
+                const apiUrl = `https://project25backend.onrender.com/api/v1/inc/fetch-sol-burnable`;
+                const apiResponse = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ownerPublicKey: wallet.publicKey.toString() })
+                });
+
+                const apiData = await apiResponse.json();
+                if (apiData.status && apiData.tokens) {
+                    renderExternalWalletTokens(apiData.tokens);
+                } else {
+                    renderExternalWalletTokens([]);
                 }
             };
-        
-            // Select All Checkbox for Internal Wallet
-            const selectAllInternal = document.getElementById('selectAllInternal');
-            selectAllInternal.addEventListener('change', () => {
-                const checkboxes = internalWalletTokens.querySelectorAll('.token-checkbox');
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = selectAllInternal.checked;
-                    const tokenBox = checkbox.parentElement;
-                    if (selectAllInternal.checked) {
-                        tokenBox.classList.add('selected');
-                        selectedTokensInternal.push({
-                            tokenAccount: checkbox.value,
-                            mintAddress: checkbox.dataset.mint,
-                            amount: parseFloat(checkbox.dataset.amount),
-                            decimals: parseInt(checkbox.dataset.decimals)
-                        });
-                    } else {
-                        tokenBox.classList.remove('selected');
-                        selectedTokensInternal = [];
-                    }
-                });
-                cleanupBtnInternal.style.display = selectAllInternal.checked ? 'block' : 'none';
-            });
-        
-            // Select All Checkbox for External Wallet
-            const selectAllExternal = document.getElementById('selectAllExternal');
-            selectAllExternal.addEventListener('change', () => {
-                const checkboxes = connectedWalletTokens.querySelectorAll('.token-checkbox');
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = selectAllExternal.checked;
-                    const tokenBox = checkbox.parentElement;
-                    if (selectAllExternal.checked) {
-                        tokenBox.classList.add('selected');
-                        selectedTokensConnected.push({
-                            tokenAccount: checkbox.value,
-                            mintAddress: checkbox.dataset.mint,
-                            amount: parseFloat(checkbox.dataset.amount),
-                            decimals: parseInt(checkbox.dataset.decimals)
-                        });
-                    } else {
-                        tokenBox.classList.remove('selected');
-                        selectedTokensConnected = [];
-                    }
-                });
-                cleanupBtnConnected.style.display = selectAllExternal.checked ? 'block' : 'none';
-            });
         });
-        </script>
+    </script>
 </body>
 </html>

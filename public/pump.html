@@ -349,7 +349,7 @@
         // Cache key for storing tokens in localStorage
         const TOKEN_CACHE_KEY = 'pumpTokensCache';
         const CACHE_EXPIRY_KEY = 'pumpTokensCacheExpiry';
-        const CACHE_EXPIRY_TIME = 10 * 60 * 1000; // 10 minutes in milliseconds
+        const CACHE_EXPIRY_TIME = 2 * 60 * 1000; // 2 minutes in milliseconds
 
         // Load tokens from cache if available and not expired
         const loadTokensFromCache = () => {
@@ -447,7 +447,7 @@
         };
 
         // Establish WebSocket connection
-        const socket = new WebSocket('wss://project25backend.onrender.com/pump');
+        const socket = new WebSocket('ws://localhost:5000/pump');
 
         socket.onopen = () => {
             console.log('WebSocket connection established.');
