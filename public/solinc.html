@@ -151,6 +151,13 @@
             margin-bottom: 10px;
         }
 
+        .no-token-message {
+            text-align: center;
+            font-size: 18px;
+            color: #412d6c;
+            margin: 20px 0;
+        }
+
         @media (min-width: 768px) {
             .container {
                 flex-direction: row;
@@ -356,23 +363,31 @@
                 internalBurnTokens.innerHTML = '';
                 internalRecoverTokens.innerHTML = '';
 
-                tokens.forEach(token => {
-                    const tokenBox = document.createElement('div');
-                    tokenBox.className = 'token-box';
-                    tokenBox.innerHTML = `
-                        <div>
-                            <strong>${token.metadata.name}</strong>
-                            <p>${token.metadata.symbol} - ${token.amount} tokens</p>
-                        </div>
-                        <input type="checkbox" class="token-checkbox" value="${token.tokenAccount}" data-mint="${token.mint}" data-amount="${token.amount}" data-decimals="${token.decimals}">
-                    `;
+                if (tokens.length === 0) {
+                    const noTokenMessage = document.createElement('div');
+                    noTokenMessage.className = 'no-token-message';
+                    noTokenMessage.textContent = 'No token found';
+                    internalBurnTokens.appendChild(noTokenMessage);
+                    internalRecoverTokens.appendChild(noTokenMessage.cloneNode(true));
+                } else {
+                    tokens.forEach(token => {
+                        const tokenBox = document.createElement('div');
+                        tokenBox.className = 'token-box';
+                        tokenBox.innerHTML = `
+                            <div>
+                                <strong>${token.metadata.name}</strong>
+                                <p>${token.metadata.symbol} - ${token.amount} tokens</p>
+                            </div>
+                            <input type="checkbox" class="token-checkbox" value="${token.tokenAccount}" data-mint="${token.mint}" data-amount="${token.amount}" data-decimals="${token.decimals}">
+                        `;
 
-                    // Add to both tabs if amount > 0, otherwise only to Recover Rent tab
-                    if (token.amount > 0) {
-                        internalBurnTokens.appendChild(tokenBox.cloneNode(true));
-                    }
-                    internalRecoverTokens.appendChild(tokenBox);
-                });
+                        // Add to both tabs if amount > 0, otherwise only to Recover Rent tab
+                        if (token.amount > 0) {
+                            internalBurnTokens.appendChild(tokenBox.cloneNode(true));
+                        }
+                        internalRecoverTokens.appendChild(tokenBox);
+                    });
+                }
             };
 
             // Fetch tokens for internal wallet from localStorage
@@ -562,23 +577,31 @@
                 externalBurnTokens.innerHTML = '';
                 externalRecoverTokens.innerHTML = '';
 
-                tokens.forEach(token => {
-                    const tokenBox = document.createElement('div');
-                    tokenBox.className = 'token-box';
-                    tokenBox.innerHTML = `
-                        <div>
-                            <strong>${token.metadata.name}</strong>
-                            <p>${token.metadata.symbol} - ${token.amount} tokens</p>
-                        </div>
-                        <input type="checkbox" class="token-checkbox" value="${token.tokenAccount}" data-mint="${token.mint}" data-amount="${token.amount}" data-decimals="${token.decimals}">
-                    `;
+                if (tokens.length === 0) {
+                    const noTokenMessage = document.createElement('div');
+                    noTokenMessage.className = 'no-token-message';
+                    noTokenMessage.textContent = 'No token found';
+                    externalBurnTokens.appendChild(noTokenMessage);
+                    externalRecoverTokens.appendChild(noTokenMessage.cloneNode(true));
+                } else {
+                    tokens.forEach(token => {
+                        const tokenBox = document.createElement('div');
+                        tokenBox.className = 'token-box';
+                        tokenBox.innerHTML = `
+                            <div>
+                                <strong>${token.metadata.name}</strong>
+                                <p>${token.metadata.symbol} - ${token.amount} tokens</p>
+                            </div>
+                            <input type="checkbox" class="token-checkbox" value="${token.tokenAccount}" data-mint="${token.mint}" data-amount="${token.amount}" data-decimals="${token.decimals}">
+                        `;
 
-                    // Add to both tabs if amount > 0, otherwise only to Recover Rent tab
-                    if (token.amount > 0) {
-                        externalBurnTokens.appendChild(tokenBox.cloneNode(true));
-                    }
-                    externalRecoverTokens.appendChild(tokenBox);
-                });
+                        // Add to both tabs if amount > 0, otherwise only to Recover Rent tab
+                        if (token.amount > 0) {
+                            externalBurnTokens.appendChild(tokenBox.cloneNode(true));
+                        }
+                        externalRecoverTokens.appendChild(tokenBox);
+                    });
+                }
             };
 
             // Burn button click handler for external wallet
