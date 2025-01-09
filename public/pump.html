@@ -268,6 +268,10 @@
         <a href="/pumpgems.html">
             <button class="pump-gems-button">Pump Gems</button>
         </a>
+        <!-- Add Search Bar -->
+        <div class="search-bar mb-4">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search tokens by name or address...">
+        </div>
         <div id="loadingState" style="display: none;">
             <div class="loading-spinner"></div>
             <span>Refreshing...</span>
@@ -332,6 +336,7 @@
         const loadingState = document.getElementById('loadingState');
         const prevPageButton = document.getElementById('prevPage');
         const nextPageButton = document.getElementById('nextPage');
+        const searchInput = document.getElementById('searchInput');
 
         const loadingOverlay = document.getElementById('loadingOverlay');
         const successOverlay = document.getElementById('successOverlay');
@@ -389,9 +394,13 @@
         const renderTokens = (tokens) => {
             const currentScrollPosition = window.scrollY;
 
-            tokens.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
+            // Add new tokens to the beginning of the array
             existingTokens = [...tokens, ...existingTokens];
+
+            // Ensure only the most recent 100 tokens are kept
+            if (existingTokens.length > 100) {
+                existingTokens = existingTokens.slice(0, 100);
+            }
 
             tokenListElement.innerHTML = '';
 
@@ -530,6 +539,16 @@
                 currentPage++;
                 renderTokens([]);
             }
+        });
+
+        // Add real-time search functionality
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filteredTokens = existingTokens.filter(token => 
+                token.data.name.toLowerCase().includes(searchTerm) || 
+                token.data.mint.toLowerCase().includes(searchTerm)
+            );
+            renderTokens(filteredTokens);
         });
 
         if (!loadTokensFromCache()) {
