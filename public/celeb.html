@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celeb Tokens</title>
+    <title>X Scanner</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+            background-size: cover; /* Cover the entire screen */
+background-image: url('img/background.jpg'); /* Add your background image */
+            background-position: center; /* Center the image */
+            background-repeat: no-repeat; /* Prevent repeating */
+            background-attachment: fixed; /* Ensure the background stays fixed */
+            /* background-image: url('img/background.jpg'); Add your background image */
             margin: 0;
             padding: 0;
             background-color: #4b4b5b; /* Updated background color */
@@ -56,7 +62,7 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            background-color: #BC9E5C;
+            background-color: #412d6c;
             color: #ffffff;
             padding: 5px 10px;
             border-radius: 4px;
@@ -84,7 +90,7 @@
         }
 
         .card .buttons button {
-            background-color: #BC9E5C;
+            background-color: #412d6c;
             border: none;
             border-radius: 4px;
             color: #ffffff;
@@ -108,7 +114,7 @@
         }
 
         .pagination button {
-            background-color: #BC9E5C;
+            background-color: #412d6c;
             border: none;
             border-radius: 4px;
             color: #ffffff;
@@ -160,7 +166,7 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            background: #BC9E5C;
+            background: #412d6c;
             border: none;
             color: #ffffff;
             padding: 5px 10px;
@@ -291,13 +297,16 @@
 <body>
  
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
-        <a class="navbar-brand" href="/">NOVI</a>
+        <a class="navbar-brand" href="/">
+            <img src="img/logo.jpeg" alt="NOVI Logo" style="height: 50px; margin-right: 20px;"> <!-- Add logo image -->
+             <!-- Keep the text if you want it alongside the logo -->
+        </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
@@ -310,9 +319,9 @@
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/celeb.html">Celeb Tokens</a>
+                    <a class="nav-link" href="/celeb.html">X Scanner</a>
                 </li>
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/ref.html">Referrals</a>
                 </li>
                 <li class="nav-item">

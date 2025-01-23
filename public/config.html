@@ -10,6 +10,11 @@
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #4b4b5b; /* Updated background color */
+            background-size: cover; /* Cover the entire screen */
+background-image: url('img/background.jpg'); /* Add your background image */
+            background-position: center; /* Center the image */
+            background-repeat: no-repeat; /* Prevent repeating */
+            background-attachment: fixed; /* Ensure the background stays fixed */
             color: #412d6c;
             display: flex;
             justify-content: center;
@@ -64,14 +69,17 @@
 <body>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
-        <a class="navbar-brand" href="/">NOVI</a>
+     <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
+        <a class="navbar-brand" href="/">
+            <img src="img/logo.jpeg" alt="NOVI Logo" style="height: 50px; margin-right: 20px;"> <!-- Add logo image -->
+             <!-- Keep the text if you want it alongside the logo -->
+        </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
@@ -84,9 +92,9 @@
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/celeb.html">Celeb Tokens</a>
+                    <a class="nav-link" href="/celeb.html">X Scanner</a>
                 </li>
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/ref.html">Referrals</a>
                 </li>
                 <li class="nav-item">

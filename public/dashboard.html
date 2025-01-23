@@ -9,35 +9,43 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #4b4b5b; /* Updated background color */
-            color: #412d6c;
+            background-color: #4b4b5b; 
+            background-image: url('img/background.jpg'); /* Add your background image */
+
+            background-size: cover; /* Cover the entire screen */
+            background-position: center; /* Center the image */
+            background-repeat: no-repeat; /* Prevent repeating */
+            background-attachment: fixed; /* Ensure the background stays fixed */
+            color: #4b4b5b;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh; /* Ensure it covers the full viewport height */
+            margin: 0;
+            padding: 0;
             overflow: hidden;
         }
 
         .dashboard-container {
             max-width: 400px;
             padding: 20px;
-            background-color: #ffffff; /* White background for the dashboard container */
+            background-color: #ffffff;
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(65, 45, 108, 0.1);
             text-align: center;
         }
 
         .btn-primary {
-            background-color: #BC9E5C; /* Primary button color */
-            border-color: #BC9E5C;
-            color: #ffffff; /* White text for buttons */
+            background-color: #412d6c;
+            border-color: #412d6c;
+            color: #ffffff;
             font-weight: 600;
             margin: 5px;
         }
 
         .btn-primary:hover {
-            background-color: #A3854A; /* Slightly darker on hover */
+            background-color: #A3854A;
             border-color: #A3854A;
         }
 
@@ -47,7 +55,7 @@
             height: 20px;
             border: 3px solid rgba(65, 45, 108, 0.3);
             border-radius: 50%;
-            border-top-color: #BC9E5C;
+            border-top-color: #412d6c;
             animation: spin 1s ease-in-out infinite;
             -webkit-animation: spin 1s ease-in-out infinite;
         }
@@ -61,15 +69,15 @@
         }
 
         .navbar {
-            background-color: #412d6c; /* Primary navbar color */
+            background-color: #412d6c;
         }
 
         .navbar-brand, .nav-link {
-            color: #ffffff !important; /* White text for navbar links */
+            color: #ffffff !important;
         }
 
         .navbar-brand:hover, .nav-link:hover {
-            color: #BC9E5C !important; /* Hover color for navbar links */
+            color: #412d6c !important;
         }
 
         .text-lg {
@@ -90,7 +98,7 @@
         }
 
         .modal-content {
-            background-color: #ffffff; /* White background for modal */
+            background-color: #ffffff;
             margin: 15% auto;
             padding: 20px;
             border: 1px solid #412d6c;
@@ -108,16 +116,16 @@
 
         .close:hover,
         .close:focus {
-            color: #BC9E5C;
+            color: #412d6c;
             text-decoration: none;
             cursor: pointer;
         }
 
         .upgrade-btn {
             display: block;
-            margin: 20px auto; /* Center the button and add space above it */
-            background-color: #BC9E5C;
-            border-color: #BC9E5C;
+            margin: 20px auto;
+            background-color: #412d6c;
+            border-color: #412d6c;
             color: #ffffff;
         }
 
@@ -142,15 +150,17 @@
     </style>
 </head>
 <body>
-   
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
-        <a class="navbar-brand" href="/">NOVI</a>
+     <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
+        <a class="navbar-brand" href="/">
+            <img src="img/logo.jpeg" alt="NOVI Logo" style="height: 50px; margin-right: 20px;"> <!-- Add logo image -->
+             <!-- Keep the text if you want it alongside the logo -->
+        </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
@@ -163,9 +173,9 @@
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/celeb.html">Celeb Tokens</a>
+                    <a class="nav-link" href="/celeb.html">X Scanner</a>
                 </li>
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/ref.html">Referrals</a>
                 </li>
                 <li class="nav-item">
@@ -182,11 +192,14 @@
         <button id="upgradeBtn" class="btn btn-primary" style="position: absolute; top: 10px; right: 20px;">
             Upgrade
         </button>
-    
+
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="text-center m-0 mx-auto">Welcome, <span id="username">accessiblecaterpillar</span></h4>
         </div>
-        
+
+        <!-- Wallet Balance Display -->
+        <p><strong>Wallet Balance:</strong> <span id="walletBalance">Loading...</span></p>
+
         <p class="text-lg mb-6">
             Snipe at will!
         </p>
@@ -196,8 +209,8 @@
         </div>
         <div id="userInfo" style="display: block;">
             <p><strong>Plan:</strong> <span id="plan">Test</span></p>
-            <p><strong>Solana Address:</strong> <span id="solAddress" style="font-size: 0.8em;">GStreZWd8LGzPN3u67hw3xSfghnF8es62t9Uj6KbrKKq</span></p>
-            <button id="viewPrivateKeysBtn" class="btn btn-primary">View Private Keys</button>
+            <p><strong>Solana Address:</strong> <span id="solAddress" style="font-size: 0.8em;"></span></p>
+            <button id="viewPrivateKeysBtn" class="btn btn-primary">View Private</button>
             <div id="privateKeysModal" class="modal">
                 <div class="modal-content">
                     <span class="close">&times;</span>
@@ -207,11 +220,11 @@
                     <div id="countdown" class="mt-3"></div>
                 </div>
             </div>
-           
+
             <div class="mt-4 d-flex flex-wrap justify-content-center">
                 <button id="raydiumBtn" class="btn btn-primary">Raydium Pools</button>
                 <button id="pumpBtn" class="btn btn-primary">Pump Pools</button>
-                <button id="celebTokensBtn" class="btn btn-primary">Celeb Tokens</button>
+                <button id="celebTokensBtn" class="btn btn-primary">X Scanner</button>
                 <button id="recoverRentBtn" class="btn btn-primary">Recover Rent</button>
             </div>
         </div>
@@ -220,10 +233,8 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="authcontext.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-
             const checkAuth = () => {
                 const token = getCookieValue('token');
                 const telegramId = getCookieValue('telegramId');
@@ -248,6 +259,7 @@
             const usernameElement = document.getElementById('username');
             const planElement = document.getElementById('plan');
             const solAddressElement = document.getElementById('solAddress');
+            const walletBalanceElement = document.getElementById('walletBalance');
             const loadingState = document.getElementById('loadingState');
             const userInfo = document.getElementById('userInfo');
             const viewPrivateKeysBtn = document.getElementById('viewPrivateKeysBtn');
@@ -262,6 +274,51 @@
             const downloadPrivateKeysBtn = document.getElementById('downloadPrivateKeysBtn');
             const countdownElement = document.getElementById('countdown');
 
+            // Function to fetch wallet balance
+            const fetchWalletBalance = async () => {
+                try {
+                    // Fetch the user's Solana address from the API
+                    const userResponse = await fetch('https://project25backend.onrender.com/api/v1/users/initialize', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ telegramId: getCookieValue('telegramId') }),
+                    });
+
+                    if (!userResponse.ok) {
+                        throw new Error('Failed to fetch user details');
+                    }
+
+                    const userData = await userResponse.json();
+                    const solAddress = userData.wallet.solana; // Get the Solana address from the API response
+
+                    // Update the DOM with the fetched Solana address
+                    solAddressElement.innerText = solAddress;
+
+                    // Fetch the wallet balance using the Solana address
+                    const balanceResponse = await fetch(`https://project25backend.onrender.com/api/v1/wallet/sol-balance/${solAddress}`);
+
+                    if (!balanceResponse.ok) {
+                        throw new Error('Failed to fetch wallet balance');
+                    }
+
+                    const balanceData = await balanceResponse.json();
+                    if (balanceData.success) {
+                        walletBalanceElement.innerText = `${balanceData.balance} SOL`;
+                    } else {
+                        walletBalanceElement.innerText = 'Error fetching balance';
+                    }
+                } catch (error) {
+                    console.error('Error fetching wallet balance:', error);
+                    walletBalanceElement.innerText = 'Error fetching balance';
+                }
+            };
+
+            // Fetch wallet balance when the page loads
+            fetchWalletBalance();
+
+            // Rest of your existing code...
             const initializeBot = async () => {
                 try {
                     const telegramId = getCookieValue('telegramId');
@@ -342,7 +399,6 @@
                         if (timeLeft <= 0) {
                             clearInterval(countdownInterval);
                             privateKeysModal.style.display = 'none';
-                            // alert('Private keys window closed. Please re-enter your password.');
                         }
                     }, 1000);
                 } catch (error) {

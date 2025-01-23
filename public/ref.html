@@ -9,7 +9,13 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+            
             background-color: #4b4b5b; /* Updated background color */
+            background-size: cover; /* Cover the entire screen */
+background-image: url('img/background.jpg'); /* Add your background image */
+            background-position: center; /* Center the image */
+            background-repeat: no-repeat; /* Prevent repeating */
+            background-attachment: fixed; /* Ensure the background stays fixed */
             color: #412d6c;
             display: flex;
             justify-content: center;
@@ -28,8 +34,8 @@
         }
 
         .btn-primary {
-            background-color: #BC9E5C; /* Primary button color */
-            border-color: #BC9E5C;
+            background-color: #412d6c; /* Primary button color */
+            border-color: #412d6c;
             color: #ffffff; /* White text for buttons */
             font-weight: 600;
         }
@@ -56,7 +62,7 @@
             height: 20px;
             border: 3px solid rgba(65, 45, 108, 0.3);
             border-radius: 50%;
-            border-top-color: #BC9E5C;
+            border-top-color: #412d6c;
             animation: spin 1s ease-in-out infinite;
             -webkit-animation: spin 1s ease-in-out infinite;
         }
@@ -78,7 +84,7 @@
         }
 
         .navbar-brand:hover, .nav-link:hover {
-            color: #BC9E5C !important; /* Hover color for navbar links */
+            color: #412d6c !important; /* Hover color for navbar links */
         }
 
         .modal {
@@ -112,7 +118,7 @@
 
         .close:hover,
         .close:focus {
-            color: #BC9E5C;
+            color: #412d6c;
             text-decoration: none;
             cursor: pointer;
         }
@@ -120,14 +126,17 @@
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
-        <a class="navbar-brand" href="/">NOVI</a>
+     <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
+        <a class="navbar-brand" href="/">
+            <img src="img/logo.jpeg" alt="NOVI Logo" style="height: 50px; margin-right: 20px;"> <!-- Add logo image -->
+             <!-- Keep the text if you want it alongside the logo -->
+        </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
@@ -140,9 +149,9 @@
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/celeb.html">Celeb Tokens</a>
+                    <a class="nav-link" href="/celeb.html">X Scanner</a>
                 </li>
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/ref.html">Referrals</a>
                 </li>
                 <li class="nav-item">

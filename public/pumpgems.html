@@ -9,7 +9,14 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+            
             background-color: #4b4b5b; /* Outer background color */
+            background-size: cover; /* Cover the entire screen */
+background-image: url('img/background.jpg'); /* Add your background image */
+            background-position: center; /* Center the image */
+            background-repeat: no-repeat; /* Prevent repeating */
+            background-attachment: fixed; /* Ensure the background stays fixed */
+            color: #412d6c;
             color: #fff; /* White text for better contrast */
             overflow-y: auto;
             margin-top: 100px; /* To ensure navbar does not overlap content */
@@ -28,7 +35,7 @@
         }
 
         .navbar-brand:hover, .nav-link:hover {
-            color: #BC9E5C !important; /* Hover color for navbar links */
+            color: #412d6c !important; /* Hover color for navbar links */
         }
 
         .container {
@@ -57,7 +64,7 @@
             display: flex;
             align-items: center;
             font-size: 0.9rem; /* Reduced font size */
-            color: #BC9E5C; /* Neon green for active state */
+            color: #412d6c; /* Neon green for active state */
         }
 
         .toggle-switch {
@@ -87,7 +94,7 @@
 
         .toggle-switch input:checked + .toggle-slider {
             transform: translateX(20px);
-            background-color: #BC9E5C; /* Neon green */
+            background-color: #412d6c; /* Neon green */
         }
 
         .btn-pause {
@@ -103,7 +110,7 @@
         #tokenList {
             flex-grow: 1;
             overflow-y: auto;
-            border: 1px solid #BC9E5C;
+            border: 1px solid #412d6c;
             border-radius: 8px;
             padding: 8px;
             background-color: #343a40; /* Dark background */
@@ -180,7 +187,7 @@
         }
 
         .btn-buy {
-            background-color: #BC9E5C; /* Primary button color */
+            background-color: #412d6c; /* Primary button color */
             color: #ffffff; /* White text for buttons */
         }
 
@@ -211,7 +218,7 @@
             padding: 10px 20px;
             font-size: 1rem;
             color: #000;
-            background-color: #BC9E5C;
+            background-color: #412d6c;
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -234,7 +241,7 @@
         }
 
         .modal-header .close:hover {
-            color: #BC9E5C; /* Hover color for close button */
+            color: #412d6c; /* Hover color for close button */
         }
 
         .modal-title {
@@ -293,7 +300,7 @@
             height: 20px;
             border: 3px solid rgba(65, 45, 108, 0.3);
             border-radius: 50%;
-            border-top-color: #BC9E5C;
+            border-top-color: #412d6c;
             animation: spin 1s ease-in-out infinite;
             -webkit-animation: spin 1s ease-in-out infinite;
         }
@@ -322,14 +329,17 @@
 <body>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
-        <a class="navbar-brand" href="/">NOVI</a>
+     <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
+        <a class="navbar-brand" href="/">
+            <img src="img/logo.jpeg" alt="NOVI Logo" style="height: 50px; margin-right: 20px;"> <!-- Add logo image -->
+             <!-- Keep the text if you want it alongside the logo -->
+        </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
@@ -342,9 +352,9 @@
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/celeb.html">Celeb Tokens</a>
+                    <a class="nav-link" href="/celeb.html">X Scanner</a>
                 </li>
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/ref.html">Referrals</a>
                 </li>
                 <li class="nav-item">

@@ -9,7 +9,14 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+            
             background-color: #4b4b5b; /* Outer background color */
+            background-size: cover; /* Cover the entire screen */
+background-image: url('img/background.jpg'); /* Add your background image */
+            background-position: center; /* Center the image */
+            background-repeat: no-repeat; /* Prevent repeating */
+            background-attachment: fixed; /* Ensure the background stays fixed */
+            color: #412d6c;
             color: #fff; /* White text for better contrast */
             overflow-y: auto;
             margin-top: 100px; /* To ensure navbar does not overlap content */
@@ -69,8 +76,8 @@
         }
 
         .btn-primary {
-            background-color: #BC9E5C; /* Primary button color */
-            border-color: #BC9E5C;
+            background-color: #412d6c; /* Primary button color */
+            border-color: #412d6c;
             color: #ffffff; /* White text for buttons */
             font-weight: 600;
         }
@@ -81,8 +88,8 @@
         }
 
         .btn-buy {
-            background-color: #BC9E5C;
-            border-color: #BC9E5C;
+            background-color: #412d6c;
+            border-color: #412d6c;
             color: #ffffff;
         }
 
@@ -128,7 +135,7 @@
 
         .close:hover,
         .close:focus {
-            color: #BC9E5C;
+            color: #412d6c;
             text-decoration: none;
             cursor: pointer;
         }
@@ -139,7 +146,7 @@
             height: 20px;
             border: 3px solid rgba(65, 45, 108, 0.3);
             border-radius: 50%;
-            border-top-color: #BC9E5C;
+            border-top-color: #412d6c;
             animation: spin 1s ease-in-out infinite;
             -webkit-animation: spin 1s ease-in-out infinite;
         }
@@ -161,7 +168,7 @@
         }
 
         .navbar-brand:hover, .nav-link:hover {
-            color: #BC9E5C !important; /* Hover color for navbar links */
+            color: #412d6c !important; /* Hover color for navbar links */
         }
 
         .message-overlay {
@@ -198,14 +205,17 @@
 
 <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
-        <a class="navbar-brand" href="/">NOVI</a>
+     <nav class="navbar navbar-expand-lg navbar-dark bg-dark w-100 fixed-top">
+        <a class="navbar-brand" href="/">
+            <img src="img/logo.jpeg" alt="NOVI Logo" style="height: 50px; margin-right: 20px;"> <!-- Add logo image -->
+             <!-- Keep the text if you want it alongside the logo -->
+        </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
@@ -218,9 +228,9 @@
                     <a class="nav-link" href="/trades.html">Trades</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/celeb.html">Celeb Tokens</a>
+                    <a class="nav-link" href="/celeb.html">X Scanner</a>
                 </li>
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="/ref.html">Referrals</a>
                 </li>
                 <li class="nav-item">
@@ -234,7 +244,14 @@
     </nav>
 
     <div class="tv-screen">
+
+        <br><br><br>
+        <br><br><br>
         <h2 class="text-center mb-4">Raydium Pools</h2>
+        <!-- Add Search Bar -->
+        <div class="search-bar mb-4">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search tokens by name or address...">
+        </div>
         <div id="loadingState" style="display: none;">
             <div class="loading-spinner"></div>
             <span>Refreshing...</span>
@@ -299,6 +316,7 @@
             const loadingState = document.getElementById('loadingState');
             const prevPageButton = document.getElementById('prevPage');
             const nextPageButton = document.getElementById('nextPage');
+            const searchInput = document.getElementById('searchInput'); // Add this line
 
             const loadingOverlay = document.getElementById('loadingOverlay');
             const successOverlay = document.getElementById('successOverlay');
@@ -322,12 +340,12 @@
                     if (now < parseInt(cacheExpiry, 10)) {
                         existingTokens = JSON.parse(cachedTokens);
                         renderTokens([]); // Render tokens from cache
-                        console.log('Loaded tokens from cache.');
+                        // console.log('Loaded tokens from cache.');
                         return true;
                     } else {
                         localStorage.removeItem(TOKEN_CACHE_KEY);
                         localStorage.removeItem(CACHE_EXPIRY_KEY);
-                        console.log('Cache expired, cleared cache.');
+                        // console.log('Cache expired, cleared cache.');
                     }
                 }
                 return false;
@@ -339,7 +357,7 @@
 
                 localStorage.setItem(TOKEN_CACHE_KEY, JSON.stringify(tokens));
                 localStorage.setItem(CACHE_EXPIRY_KEY, expiryTime.toString());
-                console.log('Saved tokens to cache.');
+                // console.log('Saved tokens to cache.');
             };
 
             const formatTimeDifference = (timestamp) => {
@@ -353,6 +371,14 @@
                 return `${Math.floor(timeDifference / 29030400)} years ago`;
             };
 
+            const filterTokensBySearch = (tokens, searchTerm) => {
+                return tokens.filter(token => {
+                    const nameMatch = token.data.name.toLowerCase().includes(searchTerm.toLowerCase());
+                    const addressMatch = token.data.baseInfo.baseAddress.toLowerCase().includes(searchTerm.toLowerCase());
+                    return nameMatch || addressMatch;
+                });
+            };
+
             const renderTokens = (tokens) => {
                 const currentScrollPosition = tokenListElement.scrollTop;
 
@@ -362,9 +388,13 @@
 
                 tokenListElement.innerHTML = '';
 
+                // Filter tokens based on the search term
+                const searchTerm = searchInput.value.trim();
+                const filteredTokens = searchTerm ? filterTokensBySearch(existingTokens, searchTerm) : existingTokens;
+
                 const startIndex = (currentPage - 1) * tokensPerPage;
                 const endIndex = startIndex + tokensPerPage;
-                const tokensToDisplay = existingTokens.slice(startIndex, endIndex);
+                const tokensToDisplay = filteredTokens.slice(startIndex, endIndex);
 
                 tokensToDisplay.forEach((token, index) => {
                     const li = document.createElement('li');
@@ -391,12 +421,12 @@
                 });
 
                 prevPageButton.disabled = currentPage === 1;
-                nextPageButton.disabled = endIndex >= existingTokens.length;
+                nextPageButton.disabled = endIndex >= filteredTokens.length;
 
                 tokenListElement.scrollTop = currentScrollPosition;
             };
 
-            const socket = new WebSocket('wss://project25backend.onrender.com/raydium');
+            const socket = new WebSocket('ws://localhost:5000/raydium');
 
             socket.onopen = () => {
                 console.log('WebSocket connection established.');
@@ -495,8 +525,13 @@
                 }
             });
 
+            // Add event listener for search input
+            searchInput.addEventListener('input', () => {
+                renderTokens([]); // Re-render tokens based on the search term
+            });
+
             if (!loadTokensFromCache()) {
-                console.log('No valid cache found, waiting for WebSocket data.');
+                // console.log('No valid cache found, waiting for WebSocket data.');
             }
         });
     </script>
