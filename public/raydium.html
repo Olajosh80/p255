@@ -426,7 +426,7 @@ background-image: url('img/background.jpg'); /* Add your background image */
                 tokenListElement.scrollTop = currentScrollPosition;
             };
 
-            const socket = new WebSocket('ws://localhost:5000/raydium');
+            const socket = new WebSocket('ws://project25backend.onrender.com/raydium');
 
             socket.onopen = () => {
                 console.log('WebSocket connection established.');
